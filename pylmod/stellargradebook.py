@@ -7,10 +7,7 @@
 import csv
 import json
 import logging
-import pickle
 import time
-
-from lxml.html.soupparser import fromstring as fromstring_bs
 import requests
 
 
@@ -54,16 +51,13 @@ class StellarGradeBook(object):
     gradebookid = None
 
     def __init__(
-        self, cert, urlbase=None, touchstone=False,
-        cookies=None, gbuuid=None
+        self, cert, urlbase=None, gbuuid=None
     ):
         """
         Initialize StellarGradeBook instance.
 
           - urlbase:    URL base for gradebook API (defaults to self.URLBASE)
-          - touchstone: True if touchstone authentication to be done
             (still needs certs); default False
-          - cookies:    requests.CookieJar object to use (optional)
           - gbuuid:     gradebook UUID (eg STELLAR:/project/mitxdemosite)
 
         """
@@ -79,87 +73,6 @@ class StellarGradeBook(object):
 
         log.debug("------------------------------------------------------")
         log.info("[StellarGradeBook] init base=%s" % urlbase)
-
-        if cookies is not None:
-            if type(cookies) == str:
-                self.load_cookies_from_file(cookies)
-            else:
-                self.ses.cookies = cookies
-        self.do_touchstone = touchstone
-        if touchstone and cookies is None:
-            self.init_touchstone()
-        if gbuuid is not None:
-            self.gradebookid = self.get_gradebookid(gbuuid)
-
-    def load_cookies_from_file(self, fn):
-        """
-        Load cookies from file, given filename; format is python
-        pickle dump
-        """
-        try:
-            self.ses.cookies = pickle.load(open(fn))
-        except Exception:
-            log.exception("[StellarGradeBook] Failed to load cookie "
-                          "file %s, skipping." % fn)
-        self.cookie_fn = fn
-
-    def save_cookies_to_file(self, fn=None):
-        """
-        Save cookies to file, given filename; format is python pickle dump
-        """
-        if fn is None:
-            fn = self.cookie_fn
-        pickle.dump(self.ses.cookies, open(fn, 'w'))
-        log.info("[StellarGradeBook] Saved cookies to file %s" % fn)
-
-    def init_touchstone(self):
-        """Initialize requests session by doing touchstone authentication"""
-        log.info("Authenticating via touchstone + certificates")
-        s = self.ses
-        r = s.get(self.URLBASE + "/academicterms")
-        form = fromstring_bs(r.content).find('.//form[@id="IdPList"]')
-        if form is not None:
-            act = form.get('action')
-            url2 = 'https://wayf.mit.edu'
-            s.post(
-                url2 + act,
-                data={'user_idp': 'https://idp.mit.edu/shibboleth',
-                      'Select': 'Continue',
-                      'duration': 'session', }
-            )
-        log.debug("    ...stage 1 ok")
-        url3 = "https://idp.mit.edu:446/idp/Authn/Certificate"
-        r3 = s.get(
-            url3,
-            data={'authn_type': 'certificate',
-                  'login_certificate': 'Use Certificate - Go'}
-        )
-        try:
-            x = fromstring_bs(r3.content)
-            url4 = x.find('.//form').get('action')
-        except Exception, err:
-            log.exception(r3.content)
-            raise
-
-        data = {}
-        for k in x.findall('.//input[@type="hidden"]'):
-            data[k.get('name')] = k.get('value')
-        log.debug("    ...stage 2 ok")
-
-        # print "data = %s" % data
-
-        r4 = s.post(url4, data=data)
-        if '"message"' in r4.content:
-            log.info("    Successfully authenticated.")
-            if hasattr(self, 'cookie_fn'):
-                # save cookies to file if filename was given
-                self.save_cookies_to_file()
-            return
-        log.critical("Failed to authenticate")
-        log.debug(r4.content)
-        raise Exception(
-            "[StellarGradeBook] failed to authenticate via touchstone"
-        )
 
     def rest_action(self, fn, url, **kwargs):
         """Routine to do low-level REST operation, with retry"""
@@ -181,7 +94,7 @@ class StellarGradeBook(object):
                 )
                 log.info("                   Retrying...")
         raise Exception(
-            "[StellarGradeBook] rest_action failure: exceed max retries"
+            "[StellarGradeBook] rest_action failure: exceeded max retries"
         )
 
     def rest_action_actual(self, fn, url, **kwargs):
@@ -191,15 +104,8 @@ class StellarGradeBook(object):
         try:
             retdat = json.loads(r.content)
         except Exception, err:
-            if (
-                    self.do_touchstone and
-                    ('<title>Touchstone@MIT' in r.content
-                     or '<title>Account Provider Selection' in r.content)
-            ):
-                self.init_touchstone()
-                return self.rest_action(fn, url, **kwargs)
             log.exception(r.content)
-            raise
+            raise err
         return retdat
 
     def get(self, service, params=None, **kwargs):
@@ -240,12 +146,12 @@ class StellarGradeBook(object):
             self.ses.delete, url, data=data, headers=headers
         )
 
-    def get_gradebookid(self, gbuuid):
+    def get_gradebook_id(self, gbuuid):
         """return gradebookid for a given gradebook uuid."""
         gb = self.get('gradebook', uuid=gbuuid)
         if 'data' not in gb:
             log.info(gb)
-            msg = "[StellarGradeBook] error in get_gradebookid - no data"
+            msg = "[StellarGradeBook] error in get_gradebook_id - no data"
             log.info(msg)
             raise Exception(msg)
         return gb['data']['gradebookId']
