@@ -1,5 +1,5 @@
 """
-Python interface to MIT Learning Module
+PyLmod Base class
 """
 import json
 import logging
@@ -10,49 +10,26 @@ import requests
 log = logging.getLogger(__name__)
 
 
-class Client(object):
-    """
-    Python class representing interface to MIT Learning Modules.
+class Base():
+    TIMEOUT = 200  # connection timeout, seconds
+    MAX_RETRIES = 10  # max attempts to call service
 
-    Example usage:
-
-    sg = Client('ichuang-cert.pem')
-    ats = sg.get('academicterms')
-    tc = ats['data'][0]['termCode']
-    sg.get('academicterm',termCode=tc)
-
-    students = sg.get_students()
-    assignments = sg.get_assignments()
-    sg.create_assignment('midterm1', 'mid1', 1.0, 100.0, '11-04-2013')
-
-    sid, student = sg.get_student_by_email(email)
-    aid, assignment = sg.get_assignment_by_name('midterm1')
-    sg.set_grade(aid, sid, 95.2)
-
-    sg.spreadsheet2gradebook(datafn)
-
-    """
+    # todo.consider moving this to config file
+    URLBASE = 'https://learning-modules.mit.edu:8443/service'
 
     GETS = {'academicterms': '',
             'academicterm': '/{termCode}',
             'gradebook': '?uuid={uuid}',
             }
 
-    GBUUID = 'STELLAR:/project/mitxdemosite'
-    TIMEOUT = 200  # connection timeout, seconds
-
-    verbose = True
-    gradebookid = None
-
     def __init__(
         self, cert, urlbase=None
     ):
         """
-        Initialize Client instance.
+        Initialize PyLmod instance.
 
           - urlbase:    URL base for gradebook API (defaults to self.URLBASE)
             (still needs certs); default False
-          - gbuuid:     gradebook UUID (eg STELLAR:/project/mitxdemosite)
 
         """
         # pem with private and public key application certificate for access
@@ -66,29 +43,29 @@ class Client(object):
         self.ses.verify = True  # verify site certificate
 
         log.debug("------------------------------------------------------")
-        log.info("[Client] init base=%s" % urlbase)
+        log.info("[PyLmod] init base=%s" % urlbase)
 
     def rest_action(self, fn, url, **kwargs):
         """Routine to do low-level REST operation, with retry"""
         cnt = 1
-        while cnt < 10:
+        while cnt < self.MAX_RETRIES:
             cnt += 1
             try:
                 return self.rest_action_actual(fn, url, **kwargs)
             except requests.ConnectionError, err:
                 log.error(
-                    "[Client] Error - connection error in "
+                    "[PyLmod] Error - connection error in "
                     "rest_action, err=%s" % err
                 )
                 log.info("                   Retrying...")
             except requests.Timeout, err:
                 log.exception(
-                    "[Client] Error - timeout in "
+                    "[PyLmod] Error - timeout in "
                     "rest_action, err=%s" % err
                 )
                 log.info("                   Retrying...")
         raise Exception(
-            "[Client] rest_action failure: exceeded max retries"
+            "[PyLmod] rest_action failure: tried %d times" % self.MAX_RETRIES
         )
 
     def rest_action_actual(self, fn, url, **kwargs):
@@ -139,48 +116,4 @@ class Client(object):
         return self.rest_action(
             self.ses.delete, url, data=data, headers=headers
         )
-
-
-# todo.remove these methods once refactoring is done
-class SGClient(object):
-    def get_academic_terms(self):
-        raise NotImplementedError
-
-    def get_assignment_by_name(self):
-        raise NotImplementedError
-
-    def get_assignments(self):
-        raise NotImplementedError
-
-    def get_gradebook_id(self, gbuuid):
-        raise NotImplementedError
-
-    def get_grades(self):
-        raise NotImplementedError
-
-    def get_section_by_name(self):
-        raise NotImplementedError
-
-    def get_sections(self):
-        raise NotImplementedError
-
-    def get_student_by_email(self):
-        raise NotImplementedError
-
-    def get_students(self):
-        raise NotImplementedError
-
-    def create_assignment(self):
-        raise NotImplementedError
-
-    def delete_assignment(self):
-        raise NotImplementedError
-
-    def set_grade(self):
-        raise NotImplementedError
-
-    def set_multigrades(self):
-        raise NotImplementedError
-
-
 

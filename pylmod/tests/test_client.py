@@ -1,10 +1,11 @@
-# -*- coding: utf-8 -*-
 """
 Test pylmod/test_client.py module
 """
-import httpretty
 import unittest
+
+import httpretty
 import semantic_version
+
 import pylmod
 
 

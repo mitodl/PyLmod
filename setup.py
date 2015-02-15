@@ -1,8 +1,9 @@
-import os
+
 import sys
 
-from setuptools import setup, find_packages
+from setuptools import setup
 from setuptools.command.test import test as testcommand
+
 
 class PyTest(testcommand):
     user_options = testcommand.user_options[:]
@@ -45,11 +46,13 @@ class PyTest(testcommand):
         errno = pytest.main(self.test_args)
         sys.exit(errno)
 
+
 extra = dict(test_suite="pylmod.tests",
              tests_require=["pytest-cov>=1.8.0", "pytest-pep8>=1.0.6",
                             "pytest-flakes>=0.2", "pytest>=2.6.3",
                             "pyflakes>=0.8.1", "pytest-cache>=1.0",
-                            "httpretty>=0.8.3", "semantic_version>=2.3.1"],
+                            "httpretty>=0.8.3", "semantic_version>=2.3.1",
+                            "requests>="],
              cmdclass={"test": PyTest},
              install_requires=["httplib2>=0.9", "requests>=2.5.1", ],
              include_package_data=True,

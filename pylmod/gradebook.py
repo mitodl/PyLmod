@@ -1,15 +1,10 @@
-#!/usr/bin/python
-#
-# Python interface to Stellar Grade Book module
-#
-# Defines the class Client
+"""
 
+"""
 import csv
 import json
 import logging
 import time
-
-import requests
 
 import pylmod
 
@@ -17,143 +12,45 @@ import pylmod
 log = logging.getLogger(__name__)
 
 
-class StellarGradeBook(object):
-    """
-    Python class representing interface to Stellar gradebook.
-
-    Example usage:
-
-    sg = Client('ichuang-cert.pem')
-    ats = sg.get('academicterms')
-    tc = ats['data'][0]['termCode']
-    sg.get('academicterm',termCode=tc)
-
-    students = sg.get_students()
-    assignments = sg.get_assignments()
-    sg.create_assignment('midterm1', 'mid1', 1.0, 100.0, '11-04-2013')
-
-    sid, student = sg.get_student_by_email(email)
-    aid, assignment = sg.get_assignment_by_name('midterm1')
-    sg.set_grade(aid, sid, 95.2)
-
-    sg.spreadsheet2gradebook(datafn)
-
+class GradeBook(pylmod.Base):
     """
 
-    URLBASE = 'https://learning-modules.mit.edu:8443/service/gradebook'
+    """
+    URLBASE = pylmod.Base.URLBASE + '/gradebook'
 
-    GETS = {'academicterms': '',
-            'academicterm': '/{termCode}',
-            'gradebook': '?uuid={uuid}',
-            }
-
-    GBUUID = 'STELLAR:/project/mitxdemosite'
-    TIMEOUT = 200  # connection timeout, seconds
-
-    verbose = True
-    gradebookid = None
-
-    def __init__(
-        self, cert, urlbase=None, gbuuid=None
-    ):
+    def get_assignment_by_name(self, assignment_name, assignments=None):
         """
-        Initialize Client instance.
-
-          - urlbase:    URL base for gradebook API (defaults to self.URLBASE)
-            (still needs certs); default False
-          - gbuuid:     gradebook UUID (eg STELLAR:/project/mitxdemosite)
-
+        Get assignment by name; returns assignment ID value (numerical)
+        and assignment dict.
         """
-        # pem with private and public key application certificate for access
-        self.cert = cert
+        if assignments is None:
+            assignments = self.get_assignments()
+        for a in assignments:
+            if a['name'] == assignment_name:
+                return a['assignmentId'], a
+        return None, None
 
-        if urlbase is not None:
-            self.URLBASE = urlbase
-        self.ses = requests.Session()
-        self.ses.cert = cert
-        self.ses.timeout = self.TIMEOUT  # connection timeout
-        self.ses.verify = True  # verify site certificate
-
-        log.debug("------------------------------------------------------")
-        log.info("[Client] init base=%s" % urlbase)
-
-    def get_gradebook_id(self, gbuuid):
-        """return gradebookid for a given gradebook uuid."""
-        gb = pylmod.Client.get_gradebook_id(
-            gbuuid)  # self.get('gradebook', uuid=gbuuid)
-        if 'data' not in gb:
-            log.info(gb)
-            msg = "[Client] error in get_gradebook_id - no data"
-            log.info(msg)
-            raise Exception(msg)
-        return gb['data']['gradebookId']
-
-    def get_students(self, gradebookid='', simple=False, sectionName=''):
+    def get_assignments(self, gradebookid='', simple=False):
         """
-        return list of students for a given gradebook,
+        return list of assignments for a given gradebook,
         specified by a gradebookid.
-        example return list element:
-        {
-          u'accountEmail': u'stellar.test2@gmail.com',
-          u'displayName': u'Molly Parker',
-          u'photoUrl': None,
-          u'middleName': None,
-          u'section': u'Unassigned',
-          u'sectionId': 1293925,
-          u'editable': False,
-          u'overallGradeInformation': None,
-          u'studentId': 1145,
-          u'studentAssignmentInfo': None,
-          u'sortableName': u'Parker, Molly',
-          u'surname': u'Parker',
-          u'givenName': u'Molly',
-          u'nickName': u'Molly',
-          u'email': u'stellar.test2@gmail.com'
-        }
         """
-        params = dict(includePhoto='false', includeGradeInfo='false',
-                      includeGradeHistory='false', includeMakeupGrades='false')
+        params = dict(includeMaxPoints='true',
+                      includeAvgStats='false',
+                      includeGradingStats='false')
 
-        url = 'students/{gradebookId}'
-        if sectionName:
-            groupid, sec = self.get_section_by_name(sectionName)
-            if groupid is None:
-                msg = (
-                    'in get_students -- Error: '
-                    'No such section %s' % sectionName
-                )
-                log.critical(msg)
-                raise Exception(msg)
-            url += '/section/%s' % groupid
-
-        sdat = self.get(
-            url,
-            params=params,
-            gradebookId=gradebookid or self.gradebookid
+        dat = self.get(
+            'assignments/{gradebookId}',
+            params=params, gradebookId=gradebookid or self.gradebookid
         )
-
         if simple:
-            # just return dict with keys email, name, section
-            map = dict(
-                accountEmail='email',
-                displayName='name',
-                section='section'
-            )
+            return [{'AssignmentName': x['name']} for x in dat['data']]
+        return dat['data']
 
-            def remap(x):
-                newx = dict((map[k], x[k]) for k in map)
-                # match certs
-                newx['email'] = newx['email'].replace('@mit.edu', '@MIT.EDU')
-                return newx
-
-            return [remap(x) for x in sdat['data']]
-
-        return sdat['data']
-
-    def get_section_by_name(self, sectionName):
+    def get_section_by_name(self, section_name):
         sections = self.get_sections()
         for sec in sections:
-            if sec['name'] == sectionName:
+            if sec['name'] == section_name:
                 return sec['groupId'], sec
         return None, None
 
@@ -185,22 +82,94 @@ class StellarGradeBook(object):
             return [{'SectionName': x['name']} for x in sdat['data']]
         return sdat['data']
 
-    def get_assignments(self, gradebookid='', simple=False):
+    def get_student_by_email(self, email, students=None):
         """
-        return list of assignments for a given gradebook,
-        specified by a gradebookid.
-        """
-        params = dict(includeMaxPoints='true',
-                      includeAvgStats='false',
-                      includeGradingStats='false')
+        Get student based on email address.  Calls self.get_students
+        to get list of all students, if not passed as the students
+        argument.  Returns studentid, student dict, if found.
 
-        dat = self.get(
-            'assignments/{gradebookId}',
-            params=params, gradebookId=gradebookid or self.gradebookid
+        return None, None if not found.
+        """
+        if students is None:
+            students = self.get_students()
+
+        email = email.lower()
+        for s in students:
+            if s['accountEmail'].lower() == email:
+                return s['studentId'], s
+        return None, None
+
+    def get_students(self, gradebookid='', simple=False, section_name=''):
+        """
+        return list of students for a given gradebook,
+        specified by a gradebookid.
+        example return list element:
+        {
+          u'accountEmail': u'stellar.test2@gmail.com',
+          u'displayName': u'Molly Parker',
+          u'photoUrl': None,
+          u'middleName': None,
+          u'section': u'Unassigned',
+          u'sectionId': 1293925,
+          u'editable': False,
+          u'overallGradeInformation': None,
+          u'studentId': 1145,
+          u'studentAssignmentInfo': None,
+          u'sortableName': u'Parker, Molly',
+          u'surname': u'Parker',
+          u'givenName': u'Molly',
+          u'nickName': u'Molly',
+          u'email': u'stellar.test2@gmail.com'
+        }
+        """
+        params = dict(includePhoto='false', includeGradeInfo='false',
+                      includeGradeHistory='false', includeMakeupGrades='false')
+
+        url = 'students/{gradebookId}'
+        if section_name:
+            groupid, sec = self.get_section_by_name(section_name)
+            if groupid is None:
+                msg = (
+                    'in get_students -- Error: '
+                    'No such section %s' % section_name
+                )
+                log.critical(msg)
+                raise Exception(msg)
+            url += '/section/%s' % groupid
+
+        sdat = self.get(
+            url,
+            params=params,
+            gradebookId=gradebookid or self.gradebookid
         )
+
         if simple:
-            return [{'AssignmentName': x['name']} for x in dat['data']]
-        return dat['data']
+            # just return dict with keys email, name, section
+            map = dict(
+                accountEmail='email',
+                displayName='name',
+                section='section'
+            )
+
+            def remap(x):
+                newx = dict((map[k], x[k]) for k in map)
+                # match certs
+                newx['email'] = newx['email'].replace('@mit.edu', '@MIT.EDU')
+                return newx
+
+            return [remap(x) for x in sdat['data']]
+
+        return sdat['data']
+
+    def get_gradebook_id(self, gbuuid):
+        """return gradebookid for a given gradebook uuid."""
+        gb = self.get('gradebook', uuid=gbuuid)
+        if 'data' not in gb:
+            log.info(gb)
+            msg = "[StellarGradeBook] error in get_gradebook_id - no data"
+            log.info(msg)
+            raise Exception(msg)
+        return gb['data']['gradebookId']
 
     def create_assignment(
         self, name, shortname, weight,
@@ -233,18 +202,6 @@ class StellarGradeBook(object):
             data={}, assignmentId=aid
         )
 
-    def get_assignment_by_name(self, assignment_name, assignments=None):
-        """
-        Get assignment by name; returns assignment ID value (numerical)
-        and assignment dict.
-        """
-        if assignments is None:
-            assignments = self.get_assignments()
-        for a in assignments:
-            if a['name'] == assignment_name:
-                return a['assignmentId'], a
-        return None, None
-
     def set_grade(
         self, assignmentid, studentid, gradeval, gradebookid='', **kwargs
     ):
@@ -264,7 +221,7 @@ class StellarGradeBook(object):
                     }
         gradeinfo.update(kwargs)
         log.info(
-            "[Client] student %s set_grade=%s for assignment %s" %
+            "[StellarGradeBook] student %s set_grade=%s for assignment %s" %
             (studentid,
              gradeval,
              assignmentid))
@@ -280,23 +237,6 @@ class StellarGradeBook(object):
         """
         return self.post('multiGrades/{gradebookId}', data=garray,
                          gradebookId=gradebookid or self.gradebookid)
-
-    def get_student_by_email(self, email, students=None):
-        """
-        Get student based on email address.  Calls self.get_students
-        to get list of all students, if not passed as the students
-        argument.  Returns studentid, student dict, if found.
-
-        return None, None if not found.
-        """
-        if students is None:
-            students = self.get_students()
-
-        email = email.lower()
-        for s in students:
-            if s['accountEmail'].lower() == email:
-                return s['studentId'], s
-        return None, None
 
     def spreadsheet2gradebook(
         self, datafn, create_assignments=True,
@@ -325,12 +265,12 @@ class StellarGradeBook(object):
         TODO: give specification for default assignment grade_max and due date?
         returns dict, dt-time-delta
         """
-        NonAssignmentFields = [
+        non_assignment_fields = [
             'ID', 'Username', 'Full Name', 'edX email', 'External email'
         ]
 
         if email_field is not None:
-            NonAssignmentFields.append(email_field)
+            non_assignment_fields.append(email_field)
         else:
             email_field = 'External email'
 
@@ -342,18 +282,18 @@ class StellarGradeBook(object):
 
         if single:
             self._spreadsheet2gradebook_slow(
-                creader, create_assignments, email_field, NonAssignmentFields
+                creader, create_assignments, email_field, non_assignment_fields
             )
             r = None
         else:
             r = self._spreadsheet2gradebook_multi(
-                creader, create_assignments, email_field, NonAssignmentFields
+                creader, create_assignments, email_field, non_assignment_fields
             )
 
         return r
 
     def _spreadsheet2gradebook_multi(
-        self, creader, create_assignments, email_field, NonAssignmentFields
+        self, creader, create_assignments, email_field, non_assignment_fields
     ):
         """
         Helper function: Transfer grades from spreadsheet using
@@ -374,7 +314,7 @@ class StellarGradeBook(object):
                     'student id for email="%s"\n' % email
                 )
             for field in cdat.keys():
-                if field in NonAssignmentFields:
+                if field in non_assignment_fields:
                     continue
                 if field not in assignment2id:
                     aid, assignment = self.get_assignment_by_name(
@@ -434,7 +374,7 @@ class StellarGradeBook(object):
         return r, dt
 
     def _spreadsheet2gradebook_slow(
-        self, creader, create_assignments, email_field, NonAssignmentFields
+        self, creader, create_assignments, email_field, non_assignment_fields
     ):
         """
         Helper function: Transfer grades from spreadsheet one at a time
@@ -446,7 +386,7 @@ class StellarGradeBook(object):
             email = cdat[email_field]
             sid, student = self.get_student_by_email(email, students)
             for field in cdat.keys():
-                if field in NonAssignmentFields:
+                if field in non_assignment_fields:
                     continue
                 if field not in assignment2id:
                     aid, assignment = self.get_assignment_by_name(
@@ -477,3 +417,4 @@ class StellarGradeBook(object):
                     )
                 )
                 r = self.set_grade(aid, sid, gradeval)
+
