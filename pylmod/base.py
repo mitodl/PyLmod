@@ -22,6 +22,11 @@ class Base():
             'gradebook': '?uuid={uuid}',
             }
 
+    GBUUID = 'STELLAR:/project/mitxdemosite'
+
+    verbose = True
+    gradebookid = None
+
     def __init__(
         self, cert, urlbase=None
     ):
