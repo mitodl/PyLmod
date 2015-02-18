@@ -52,9 +52,9 @@ extra = dict(test_suite="pylmod.tests",
                             "pytest-flakes>=0.2", "pytest>=2.6.3",
                             "pyflakes>=0.8.1", "pytest-cache>=1.0",
                             "httpretty>=0.8.3", "semantic_version>=2.3.1",
-                            "requests>="],
+                            ],
              cmdclass={"test": PyTest},
-             install_requires=["httplib2>=0.9", "requests>=2.5.1", ],
+             install_requires=["requests>=2.5.1", ],
              include_package_data=True,
              zip_safe=True)
 
@@ -63,7 +63,7 @@ VERSION = __import__('pylmod').VERSION
 README = open('README.rst').read()
 
 setup(
-    name='PyLmod',
+    name='pylmod',
     version=VERSION,
     license='BSD',
     author='MIT ODL Engineering',

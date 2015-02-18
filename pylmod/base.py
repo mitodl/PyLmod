@@ -27,9 +27,7 @@ class Base():
     verbose = True
     gradebookid = None
 
-    def __init__(
-        self, cert, urlbase=None
-    ):
+    def __init__(self, cert, gbuuid):
         """
         Initialize PyLmod instance.
 
@@ -40,15 +38,13 @@ class Base():
         # pem with private and public key application certificate for access
         self.cert = cert
 
-        if urlbase is not None:
-            self.URLBASE = urlbase
         self.ses = requests.Session()
         self.ses.cert = cert
         self.ses.timeout = self.TIMEOUT  # connection timeout
         self.ses.verify = True  # verify site certificate
 
         log.debug("------------------------------------------------------")
-        log.info("[PyLmod] init base=%s" % urlbase)
+        log.info("[PyLmod] init base=%s" % self.URLBASE)
 
     def rest_action(self, fn, url, **kwargs):
         """Routine to do low-level REST operation, with retry"""
@@ -86,7 +82,7 @@ class Base():
 
     def get(self, service, params=None, **kwargs):
         """
-        Generic GET operation for retrieving data from Gradebook API
+        Generic GET operation for retrieving data from LM API
         Example:
           sg.get('students/{gradebookId}', params=params, gradebookId=gbid)
         """

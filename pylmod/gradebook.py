@@ -6,17 +6,17 @@ import json
 import logging
 import time
 
-import pylmod
+from base import Base
 
 
 log = logging.getLogger(__name__)
 
 
-class GradeBook(pylmod.Base):
+class GradeBook(Base):
     """
 
     """
-    URLBASE = pylmod.Base.URLBASE + '/gradebook'
+    URLBASE = Base.URLBASE + '/gradebook'
 
     def get_assignment_by_name(self, assignment_name, assignments=None):
         """

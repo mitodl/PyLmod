@@ -3,14 +3,14 @@
 """
 import logging
 
-import pylmod
+from base import Base
 
 
 log = logging.getLogger(__name__)
 
 
-class Membership(pylmod.Base):
+class Membership(Base):
     """
 
     """
-    URLBASE = pylmod.Base.URLBASE + '/membership'
+    URLBASE = Base.URLBASE + '/membership'

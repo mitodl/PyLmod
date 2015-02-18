@@ -10,7 +10,7 @@ from membership import Membership
 log = logging.getLogger(__name__)
 
 
-class Client(object):
+class Client(GradeBook, Membership):
     """
     Python class representing interface to MIT Learning Modules.
 
