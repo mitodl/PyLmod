@@ -3,7 +3,7 @@
 """
 import logging
 
-from base import Base
+from pylmod.base import Base
 
 
 log = logging.getLogger(__name__)
