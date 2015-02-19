@@ -1,3 +1,19 @@
+.*.sw*
+*.pyc
+*.pyo
+*.pkl
+*~
+.DS_Store
+MANIFEST
+build
+dist
+docs/sphinx/_build
+docs/epydoc/apidocs
+docs/apidocs
+docs/html
+docs/pdf
+src
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -6,21 +22,22 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+*.egg
+*.egg-info/
+.eggs/
+.installed.cfg
 .Python
-env/
 build/
 develop-eggs/
 dist/
 downloads/
 eggs/
+env/
 lib/
 lib64/
 parts/
 sdist/
 var/
-*.egg-info/
-.installed.cfg
-*.egg
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -52,3 +69,6 @@ docs/_build/
 
 # PyBuilder
 target/
+
+#PyCharm
+.idea
