@@ -38,7 +38,7 @@ class StellarGradeBook(object):
 
     """
 
-    URLBASE = 'https://learning-modules-test.mit.edu:8443/service/gradebook'
+    URLBASE = 'https://learning-modules.mit.edu:8443/service/gradebook'
 
     GETS = {'academicterms': '',
             'academicterm': '/{termCode}',
@@ -105,7 +105,7 @@ class StellarGradeBook(object):
         r = fn(url, timeout=self.TIMEOUT, verify=False, **kwargs)
         try:
             retdat = json.loads(r.content)
-        except Exception, err:
+        except Exception:
             log.exception(r.content)
             raise
         return retdat
