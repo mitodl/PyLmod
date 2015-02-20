@@ -2,6 +2,6 @@
 """
 PyLmod is a module that implements MIT Learning Modules API in python
 """
-VERSION = "0.1.0" # pragma: no cover
+VERSION = "0.1.0"  # pragma: no cover
 
 __all__ = ['Client', 'StellarGradeBook', ]

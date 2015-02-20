@@ -6,6 +6,7 @@ from stellargradebook import StellarGradeBook
 
 log = logging.getLogger(__name__)
 
+
 class Client(StellarGradeBook):
     """
     Python class representing interface to MIT Learning Modules.

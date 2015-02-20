@@ -43,7 +43,7 @@ class StellarGradeBook(object):
     GETS = {'academicterms': '',
             'academicterm': '/{termCode}',
             'gradebook': '?uuid={uuid}',
-    }
+            }
 
     GBUUID = 'STELLAR:/project/mitxdemosite'
     TIMEOUT = 200  # connection timeout, seconds
@@ -51,7 +51,6 @@ class StellarGradeBook(object):
     verbose = True
     gradebookid = None
 
-    # todo.do we want to pass gbuuid as param in __init__?
     def __init__(self, cert, urlbase=None, gbuuid=None):
         """
         Initialize StellarGradeBook instance.
@@ -73,6 +72,9 @@ class StellarGradeBook(object):
 
         log.debug("------------------------------------------------------")
         log.info("[StellarGradeBook] init base=%s" % urlbase)
+
+        if gbuuid is not None:
+            self.gradebookid = self.get_gradebook_id(gbuuid)
 
     def rest_action(self, fn, url, **kwargs):
         """Routine to do low-level REST operation, with retry"""
@@ -104,13 +106,6 @@ class StellarGradeBook(object):
         try:
             retdat = json.loads(r.content)
         except Exception, err:
-            if (
-                    self.do_touchstone and
-                    ('<title>Touchstone@MIT' in r.content
-                     or '<title>Account Provider Selection' in r.content)
-            ):
-                self.init_touchstone()
-                return self.rest_action(fn, url, **kwargs)
             log.exception(r.content)
             raise
         return retdat
@@ -158,12 +153,12 @@ class StellarGradeBook(object):
         gb = self.get('gradebook', uuid=gbuuid)
         if 'data' not in gb:
             log.info(gb)
-            msg = "[StellarGradeBook] error in get_gradebookid - no data"
+            msg = "[StellarGradeBook] error in get_gradebook_id - no data"
             log.info(msg)
             raise Exception(msg)
         return gb['data']['gradebookId']
 
-    def get_students(self, gradebookid='', simple=False, sectionName=''):
+    def get_students(self, gradebookid='', simple=False, section_name=''):
         """
         return list of students for a given gradebook,
         specified by a gradebookid.
@@ -190,12 +185,12 @@ class StellarGradeBook(object):
                       includeGradeHistory='false', includeMakeupGrades='false')
 
         url = 'students/{gradebookId}'
-        if sectionName:
-            groupid, sec = self.get_section_by_name(sectionName)
+        if section_name:
+            groupid, sec = self.get_section_by_name(section_name)
             if groupid is None:
                 msg = (
                     'in get_students -- Error: '
-                    'No such section %s' % sectionName
+                    'No such section %s' % section_name
                 )
                 log.critical(msg)
                 raise Exception(msg)
@@ -225,10 +220,10 @@ class StellarGradeBook(object):
 
         return sdat['data']
 
-    def get_section_by_name(self, sectionName):
+    def get_section_by_name(self, section_name):
         sections = self.get_sections()
         for sec in sections:
-            if sec['name'] == sectionName:
+            if sec['name'] == section_name:
                 return sec['groupId'], sec
         return None, None
 
@@ -278,9 +273,9 @@ class StellarGradeBook(object):
         return dat['data']
 
     def create_assignment(
-        self, name, shortname, weight,
-        maxpoints, duedatestr, gradebookid='',
-        **kwargs
+            self, name, shortname, weight,
+            maxpoints, duedatestr, gradebookid='',
+            **kwargs
     ):
         """
         Create a new assignment.
@@ -321,7 +316,7 @@ class StellarGradeBook(object):
         return None, None
 
     def set_grade(
-        self, assignmentid, studentid, gradeval, gradebookid='', **kwargs
+            self, assignmentid, studentid, gradeval, gradebookid='', **kwargs
     ):
         """
         Set numerical grade for student & assignment.
@@ -336,7 +331,7 @@ class StellarGradeBook(object):
                      "mode": 2,
                      "comment": 'from MITx %s' % time.ctime(time.time()),
                      "numericGradeValue": str(gradeval),
-        }
+                     }
         gradeinfo.update(kwargs)
         log.info(
             "[StellarGradeBook] student %s set_grade=%s for assignment %s" %
@@ -375,8 +370,8 @@ class StellarGradeBook(object):
         return None, None
 
     def spreadsheet2gradebook(
-        self, datafn, create_assignments=True,
-        email_field=None, single=False
+            self, datafn, create_assignments=True,
+            email_field=None, single=False
     ):
         """
         Upload grades from CSV format spreadsheet file into the
@@ -401,12 +396,12 @@ class StellarGradeBook(object):
         TODO: give specification for default assignment grade_max and due date?
         returns dict, dt-time-delta
         """
-        NonAssignmentFields = [
+        non_assignment_fields = [
             'ID', 'Username', 'Full Name', 'edX email', 'External email'
         ]
 
         if email_field is not None:
-            NonAssignmentFields.append(email_field)
+            non_assignment_fields.append(email_field)
         else:
             email_field = 'External email'
 
@@ -418,18 +413,18 @@ class StellarGradeBook(object):
 
         if single:
             self._spreadsheet2gradebook_slow(
-                creader, create_assignments, email_field, NonAssignmentFields
+                creader, create_assignments, email_field, non_assignment_fields
             )
             r = None
         else:
             r = self._spreadsheet2gradebook_multi(
-                creader, create_assignments, email_field, NonAssignmentFields
+                creader, create_assignments, email_field, non_assignment_fields
             )
 
         return r
 
     def _spreadsheet2gradebook_multi(
-        self, creader, create_assignments, email_field, NonAssignmentFields
+            self, creader, create_assignments, email_field, non_assignment_fields
     ):
         """
         Helper function: Transfer grades from spreadsheet using
@@ -450,7 +445,7 @@ class StellarGradeBook(object):
                     'student id for email="%s"\n' % email
                 )
             for field in cdat.keys():
-                if field in NonAssignmentFields:
+                if field in non_assignment_fields:
                     continue
                 if field not in assignment2id:
                     aid, assignment = self.get_assignment_by_name(
@@ -465,7 +460,7 @@ class StellarGradeBook(object):
                         )
                         if (
                                 not r.get('data', '') or
-                                    'assignmentId' not in r.get('data')
+                                'assignmentId' not in r.get('data')
                         ):
                             log.warning('Failed to create assignment %s' % name)
                             log.info(r)
@@ -510,7 +505,7 @@ class StellarGradeBook(object):
         return r, dt
 
     def _spreadsheet2gradebook_slow(
-        self, creader, create_assignments, email_field, NonAssignmentFields
+            self, creader, create_assignments, email_field, non_assignment_fields
     ):
         """
         Helper function: Transfer grades from spreadsheet one at a time
@@ -522,7 +517,7 @@ class StellarGradeBook(object):
             email = cdat[email_field]
             sid, student = self.get_student_by_email(email, students)
             for field in cdat.keys():
-                if field in NonAssignmentFields:
+                if field in non_assignment_fields:
                     continue
                 if field not in assignment2id:
                     aid, assignment = self.get_assignment_by_name(
