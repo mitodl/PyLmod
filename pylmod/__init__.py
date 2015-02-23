@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+from pylmod.client import Client
+from pylmod.stellargradebook import StellarGradeBook
 """
 PyLmod is a module that implements MIT Learning Modules API in python
 """

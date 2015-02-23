@@ -2,7 +2,7 @@
 Python interface to MIT Learning Module
 """
 import logging
-from stellargradebook import StellarGradeBook
+from pylmod.stellargradebook import StellarGradeBook
 
 log = logging.getLogger(__name__)
 

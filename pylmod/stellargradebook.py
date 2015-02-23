@@ -1,8 +1,9 @@
 #!/usr/bin/python
-#
-# Python interface to Stellar Grade Book module
-#
-# Defines the class StellarGradeBook
+"""
+ Python interface to Stellar Grade Book module
+
+ Defines the class StellarGradeBook
+"""
 
 import csv
 import json
@@ -42,8 +43,7 @@ class StellarGradeBook(object):
 
     GETS = {'academicterms': '',
             'academicterm': '/{termCode}',
-            'gradebook': '?uuid={uuid}',
-            }
+            'gradebook': '?uuid={uuid}',}
 
     GBUUID = 'STELLAR:/project/mitxdemosite'
     TIMEOUT = 200  # connection timeout, seconds
@@ -204,14 +204,14 @@ class StellarGradeBook(object):
 
         if simple:
             # just return dict with keys email, name, section
-            map = dict(
+            student_map = dict(
                 accountEmail='email',
                 displayName='name',
                 section='section'
             )
 
-            def remap(x):
-                newx = dict((map[k], x[k]) for k in map)
+            def remap(students):
+                newx = dict((student_map[k], students[k]) for k in student_map)
                 # match certs
                 newx['email'] = newx['email'].replace('@mit.edu', '@MIT.EDU')
                 return newx
@@ -330,8 +330,7 @@ class StellarGradeBook(object):
                      "assignmentId": assignmentid,
                      "mode": 2,
                      "comment": 'from MITx %s' % time.ctime(time.time()),
-                     "numericGradeValue": str(gradeval),
-                     }
+                     "numericGradeValue": str(gradeval),}
         gradeinfo.update(kwargs)
         log.info(
             "[StellarGradeBook] student %s set_grade=%s for assignment %s" %
@@ -424,7 +423,8 @@ class StellarGradeBook(object):
         return r
 
     def _spreadsheet2gradebook_multi(
-            self, creader, create_assignments, email_field, non_assignment_fields
+            self, creader, create_assignments,
+            email_field, non_assignment_fields
     ):
         """
         Helper function: Transfer grades from spreadsheet using
@@ -462,7 +462,8 @@ class StellarGradeBook(object):
                                 not r.get('data', '') or
                                 'assignmentId' not in r.get('data')
                         ):
-                            log.warning('Failed to create assignment %s' % name)
+                            log.warning(
+                                'Failed to create assignment %s' % name)
                             log.info(r)
                             msg = (
                                 "Error ! Failed to create assignment %s" % name
@@ -505,7 +506,8 @@ class StellarGradeBook(object):
         return r, dt
 
     def _spreadsheet2gradebook_slow(
-            self, creader, create_assignments, email_field, non_assignment_fields
+            self, creader, create_assignments,
+            email_field, non_assignment_fields
     ):
         """
         Helper function: Transfer grades from spreadsheet one at a time
@@ -547,4 +549,4 @@ class StellarGradeBook(object):
                         email, field, gradeval
                     )
                 )
-                r = self.set_grade(aid, sid, gradeval)
+                self.set_grade(aid, sid, gradeval)
