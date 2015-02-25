@@ -69,7 +69,7 @@ setup(
     author='MIT ODL Engineering',
     author_email='odl-engineering@mit.edu',
     url="http://github.com/mitodl/pylmod",
-    description="PyLmod provides Python Implementation of MIT Learning Modules",
+    description="PyLmod is a Python Implementation of MIT Learning Modules",
     long_description=README,
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
