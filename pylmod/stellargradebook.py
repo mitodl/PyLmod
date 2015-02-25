@@ -13,7 +13,7 @@ import time
 import requests
 
 
-log = logging.getLogger(__name__)
+log = logging.getLogger(__name__)  # pylint: disable=C0103
 
 
 class StellarGradeBook(object):
@@ -39,11 +39,9 @@ class StellarGradeBook(object):
 
     """
 
-    URLBASE = 'https://learning-modules.mit.edu:8443/service/gradebook'
-
     GETS = {'academicterms': '',
             'academicterm': '/{termCode}',
-            'gradebook': '?uuid={uuid}',}
+            'gradebook': '?uuid={uuid}'}
 
     GBUUID = 'STELLAR:/project/mitxdemosite'
     TIMEOUT = 200  # connection timeout, seconds
@@ -51,11 +49,16 @@ class StellarGradeBook(object):
     verbose = True
     gradebookid = None
 
-    def __init__(self, cert, urlbase=None, gbuuid=None):
+    def __init__(
+            self,
+            cert,
+            urlbase='https://learning-modules.mit.edu:8443/service/gradebook',
+            gbuuid=None
+    ):
         """
         Initialize StellarGradeBook instance.
 
-          - urlbase:    URL base for gradebook API (defaults to self.URLBASE)
+          - urlbase:    URL base for gradebook API
             (still needs certs); default False
           - gbuuid:     gradebook UUID (eg STELLAR:/project/mitxdemosite)
 
@@ -63,50 +66,49 @@ class StellarGradeBook(object):
         # pem with private and public key application certificate for access
         self.cert = cert
 
-        if urlbase is not None:
-            self.URLBASE = urlbase
+        self.urlbase = urlbase
         self.ses = requests.Session()
         self.ses.cert = cert
         self.ses.timeout = self.TIMEOUT  # connection timeout
         self.ses.verify = True  # verify site certificate
 
         log.debug("------------------------------------------------------")
-        log.info("[StellarGradeBook] init base=%s" % urlbase)
+        log.info("[StellarGradeBook] init base=%s", urlbase)
 
         if gbuuid is not None:
             self.gradebookid = self.get_gradebook_id(gbuuid)
 
-    def rest_action(self, fn, url, **kwargs):
+    def rest_action(self, func, url, **kwargs):
         """Routine to do low-level REST operation, with retry"""
         cnt = 1
         while cnt < 10:
             cnt += 1
             try:
-                return self.rest_action_actual(fn, url, **kwargs)
+                return self.rest_action_actual(func, url, **kwargs)
             except requests.ConnectionError, err:
                 log.error(
                     "[StellarGradeBook] Error - connection error in "
-                    "rest_action, err=%s" % err
+                    "rest_action, err=%s", err
                 )
                 log.info("                   Retrying...")
             except requests.Timeout, err:
                 log.exception(
                     "[StellarGradeBook] Error - timeout in "
-                    "rest_action, err=%s" % err
+                    "rest_action, err=%s", err
                 )
                 log.info("                   Retrying...")
         raise Exception(
             "[StellarGradeBook] rest_action failure: exceed max retries"
         )
 
-    def rest_action_actual(self, fn, url, **kwargs):
+    def rest_action_actual(self, func, url, **kwargs):
         """Routine to do low-level REST operation"""
-        log.info('Running request to %s' % url)
-        r = fn(url, timeout=self.TIMEOUT, verify=False, **kwargs)
+        log.info('Running request to %s', url)
+        resp = func(url, timeout=self.TIMEOUT, verify=False, **kwargs)
         try:
-            retdat = json.loads(r.content)
+            retdat = json.loads(resp.content)
         except Exception:
-            log.exception(r.content)
+            log.exception(resp.content)
             raise
         return retdat
 
@@ -117,7 +119,7 @@ class StellarGradeBook(object):
           sg.get('students/{gradebookId}', params=params, gradebookId=gbid)
         """
         urlfmt = '{base}/' + service + self.GETS.get(service, '')
-        url = urlfmt.format(base=self.URLBASE, **kwargs)
+        url = urlfmt.format(base=self.urlbase, **kwargs)
         if params is None:
             params = {}
         return self.rest_action(self.ses.get, url, params=params)
@@ -129,7 +131,7 @@ class StellarGradeBook(object):
         it is turned into a JSON string for the POST body.
         """
         urlfmt = '{base}/' + service
-        url = urlfmt.format(base=self.URLBASE, **kwargs)
+        url = urlfmt.format(base=self.urlbase, **kwargs)
         if not (type(data) == str or type(data) == unicode):
             data = json.dumps(data)
         headers = {'content-type': 'application/json'}
@@ -140,7 +142,7 @@ class StellarGradeBook(object):
         Generic DELETE operation for Gradebook API.
         """
         urlfmt = '{base}/' + service
-        url = urlfmt.format(base=self.URLBASE, **kwargs)
+        url = urlfmt.format(base=self.urlbase, **kwargs)
         if not (type(data) == str or type(data) == unicode):
             data = json.dumps(data)
         headers = {'content-type': 'application/json'}
@@ -150,13 +152,13 @@ class StellarGradeBook(object):
 
     def get_gradebook_id(self, gbuuid):
         """return gradebookid for a given gradebook uuid."""
-        gb = self.get('gradebook', uuid=gbuuid)
-        if 'data' not in gb:
-            log.info(gb)
+        gradebook_id = self.get('gradebook', uuid=gbuuid)
+        if 'data' not in gradebook_id:
+            log.info(gradebook_id)
             msg = "[StellarGradeBook] error in get_gradebook_id - no data"
             log.info(msg)
             raise Exception(msg)
-        return gb['data']['gradebookId']
+        return gradebook_id['data']['gradebookId']
 
     def get_students(self, gradebookid='', simple=False, section_name=''):
         """
@@ -186,7 +188,7 @@ class StellarGradeBook(object):
 
         url = 'students/{gradebookId}'
         if section_name:
-            groupid, sec = self.get_section_by_name(section_name)
+            groupid, _ = self.get_section_by_name(section_name)
             if groupid is None:
                 msg = (
                     'in get_students -- Error: '
@@ -211,6 +213,8 @@ class StellarGradeBook(object):
             )
 
             def remap(students):
+                """ make email domain name uppercase
+                """
                 newx = dict((student_map[k], students[k]) for k in student_map)
                 # match certs
                 newx['email'] = newx['email'].replace('@mit.edu', '@MIT.EDU')
@@ -221,6 +225,11 @@ class StellarGradeBook(object):
         return sdat['data']
 
     def get_section_by_name(self, section_name):
+        """
+        return section for a given section name
+        :param section_name:
+        :return: section
+        """
         sections = self.get_sections()
         for sec in sections:
             if sec['name'] == section_name:
@@ -276,7 +285,7 @@ class StellarGradeBook(object):
             self, name, shortname, weight,
             maxpoints, duedatestr, gradebookid='',
             **kwargs
-    ):
+    ):  # pylint: disable=too-many-arguments
         """
         Create a new assignment.
         """
@@ -289,9 +298,9 @@ class StellarGradeBook(object):
                 "maxPointsTotal": maxpoints,
                 "dueDateString": duedatestr}
         data.update(kwargs)
-        log.info("[StellaGradeBook] Creating assignment %s" % name)
+        log.info("[StellaGradeBook] Creating assignment %s", name)
         ret = self.post('assignment', data)
-        log.debug('ret=%s' % ret)
+        log.debug('posted value=%s', ret)
         return ret
 
     def delete_assignment(self, aid):
@@ -310,9 +319,9 @@ class StellarGradeBook(object):
         """
         if assignments is None:
             assignments = self.get_assignments()
-        for a in assignments:
-            if a['name'] == assignment_name:
-                return a['assignmentId'], a
+        for assignment in assignments:
+            if assignment['name'] == assignment_name:
+                return assignment['assignmentId'], assignment
         return None, None
 
     def set_grade(
@@ -330,13 +339,13 @@ class StellarGradeBook(object):
                      "assignmentId": assignmentid,
                      "mode": 2,
                      "comment": 'from MITx %s' % time.ctime(time.time()),
-                     "numericGradeValue": str(gradeval),}
+                     "numericGradeValue": str(gradeval)}
         gradeinfo.update(kwargs)
         log.info(
-            "[StellarGradeBook] student %s set_grade=%s for assignment %s" %
-            (studentid,
-             gradeval,
-             assignmentid))
+            "[StellarGradeBook] student %s set_grade=%s for assignment %s",
+            studentid,
+            gradeval,
+            assignmentid)
         return self.post(
             'grades/{gradebookId}',
             data=gradeinfo,
@@ -363,15 +372,12 @@ class StellarGradeBook(object):
             students = self.get_students()
 
         email = email.lower()
-        for s in students:
-            if s['accountEmail'].lower() == email:
-                return s['studentId'], s
+        for student in students:
+            if student['accountEmail'].lower() == email:
+                return student['studentId'], student
         return None, None
 
-    def spreadsheet2gradebook(
-            self, datafn, create_assignments=True,
-            email_field=None, single=False
-    ):
+    def spreadsheet2gradebook(self, datafn, email_field=None, single=False):
         """
         Upload grades from CSV format spreadsheet file into the
         Stellar gradebook.  The spreadsheet should have a column named
@@ -405,25 +411,25 @@ class StellarGradeBook(object):
             email_field = 'External email'
 
         if not hasattr(datafn, 'read'):
-            fp = open(datafn)
+            file_pointer = open(datafn)
         else:
-            fp = datafn
-        creader = csv.DictReader(fp, dialect='excel')
+            file_pointer = datafn
+        creader = csv.DictReader(file_pointer, dialect='excel')
 
         if single:
             self._spreadsheet2gradebook_slow(
-                creader, create_assignments, email_field, non_assignment_fields
+                creader, email_field, non_assignment_fields
             )
-            r = None
+            resp = None
         else:
-            r = self._spreadsheet2gradebook_multi(
-                creader, create_assignments, email_field, non_assignment_fields
+            resp = self._spreadsheet2gradebook_multi(
+                creader, email_field, non_assignment_fields
             )
 
-        return r
+        return resp
 
-    def _spreadsheet2gradebook_multi(
-            self, creader, create_assignments,
+    def _spreadsheet2gradebook_multi(  # pylint: disable=too-many-locals
+            self, creader,
             email_field, non_assignment_fields
     ):
         """
@@ -438,53 +444,52 @@ class StellarGradeBook(object):
         garray = []
         for cdat in creader:
             email = cdat[email_field]
-            sid, student = self.get_student_by_email(email, students)
+            sid, _ = self.get_student_by_email(email, students)
             if sid is None:
                 log.warning(
                     'Error in spreadsheet2gradebook: cannot find '
-                    'student id for email="%s"\n' % email
+                    'student id for email="%s"\n', email
                 )
             for field in cdat.keys():
                 if field in non_assignment_fields:
                     continue
                 if field not in assignment2id:
-                    aid, assignment = self.get_assignment_by_name(
+                    aid, _ = self.get_assignment_by_name(
                         field, assignments=assignments
                     )
                     if aid is None:
                         name = field
                         shortname = field[0:3] + field[-2:]
                         log.info('calling create_assignment from multi')
-                        r = self.create_assignment(
+                        resp = self.create_assignment(
                             name, shortname, 1.0, 100.0, '12-15-2013'
                         )
                         if (
-                                not r.get('data', '') or
-                                'assignmentId' not in r.get('data')
+                                not resp.get('data', '') or
+                                'assignmentId' not in resp.get('data')
                         ):
                             log.warning(
-                                'Failed to create assignment %s' % name)
-                            log.info(r)
+                                'Failed to create assignment %s', name)
+                            log.info(resp)
                             msg = (
-                                "Error ! Failed to create assignment %s" % name
+                                "Error ! Failed to create assignment %s", name
                             )
                             log.critical(msg)
                             raise Exception(msg)
-                        aid = r['data']['assignmentId']
-                    log.info("Assignment %s has Id=%s" % (field, aid))
+                        aid = resp['data']['assignmentId']
+                    log.info("Assignment %s has Id=%s", field, aid)
                     assignment2id[field] = aid
 
                 aid = assignment2id[field]
-                ok = True
+                is_successful = True
                 try:
                     gradeval = float(cdat[field]) * 1.0
-                except Exception as err:
+                except ValueError as err:
                     log.exception(
-                        "Failed in converting grade for student %s"
-                        ", cdat=%s, err=%s" % (sid, cdat, err)
-                    )
-                    ok = False
-                if ok:
+                        "Failed in converting grade for student %s,"
+                        " cdat=%s, err=%s", sid, cdat, err)
+                    is_successful = False
+                if is_successful:
                     garray.append(
                         {"studentId": sid,
                          "assignmentId": aid,
@@ -494,19 +499,19 @@ class StellarGradeBook(object):
                     )
         log.info(
             'Data read from file, doing multiGrades API '
-            'call (%d grades)' % len(garray)
+            'call (%d grades)', len(garray)
         )
         tstart = time.time()
-        r = self.multi_grade(garray)
-        dt = time.time() - tstart
+        resp = self.multi_grade(garray)
+        duration = time.time() - tstart
         log.info(
             'multiGrades API call done (%d bytes returned) '
-            'dt=%6.2f seconds.' % (len(json.dumps(r)), dt)
+            'dt=%6.2f seconds.', len(json.dumps(resp)), duration
         )
-        return r, dt
+        return resp, duration
 
-    def _spreadsheet2gradebook_slow(
-            self, creader, create_assignments,
+    def _spreadsheet2gradebook_slow(  # pylint: disable=too-many-locals
+            self, creader,
             email_field, non_assignment_fields
     ):
         """
@@ -517,36 +522,34 @@ class StellarGradeBook(object):
         students = self.get_students()
         for cdat in creader:
             email = cdat[email_field]
-            sid, student = self.get_student_by_email(email, students)
+            sid, _ = self.get_student_by_email(email, students)
             for field in cdat.keys():
                 if field in non_assignment_fields:
                     continue
                 if field not in assignment2id:
-                    aid, assignment = self.get_assignment_by_name(
+                    aid, _ = self.get_assignment_by_name(
                         field, assignments=assignments
                     )
                     if aid is None:
                         name = field
                         shortname = field[0:3] + field[-2:]
-                        r = self.create_assignment(
+                        resp = self.create_assignment(
                             name, shortname, 1.0, 100.0, '12-15-2013'
                         )
-                        if 'assignmentId' not in r['data']:
-                            log.info(r)
+                        if 'assignmentId' not in resp['data']:
+                            log.info(resp)
                             msg = (
                                 "Error ! Failed to create assignment %s" % name
                             )
                             log.error(msg)
                             raise Exception(msg)
-                        aid = r['data']['assignmentId']
-                        log.info("Assignment %s has Id=%s" % (field, aid))
+                        aid = resp['data']['assignmentId']
+                        log.info("Assignment %s has Id=%s", field, aid)
                     assignment2id[field] = aid
 
                 aid = assignment2id[field]
                 gradeval = float(cdat[field]) * 1.0
                 log.info(
-                    "--> Student %s assignment %s grade %s" % (
-                        email, field, gradeval
-                    )
-                )
+                    "--> Student %s assignment %s grade %s",
+                    email, field, gradeval)
                 self.set_grade(aid, sid, gradeval)
