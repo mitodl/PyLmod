@@ -1,7 +1,7 @@
 
 import sys
 
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.test import test as testcommand
 
 
@@ -58,19 +58,18 @@ extra = dict(test_suite="pylmod.tests",
              include_package_data=True,
              zip_safe=True)
 
-VERSION = __import__('pylmod').VERSION
-
 README = open('README.rst').read()
 
 setup(
     name='pylmod',
-    version=VERSION,
+    version='0.1.0',
     license='BSD',
     author='MIT ODL Engineering',
     author_email='odl-engineering@mit.edu',
     url="http://github.com/mitodl/pylmod",
     description="PyLmod is a Python Implementation of MIT Learning Modules",
     long_description=README,
+    packages=find_packages(),
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
