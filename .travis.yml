@@ -6,6 +6,6 @@ install:
     - pip install coveralls
 script:
     - python setup.py test --coverage --pep8 --flakes
-    - coverage run --source=orcoursetrion setup.py test
+    - coverage run --source=pylmod setup.py test
 after_success:
     coveralls
