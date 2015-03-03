@@ -2,12 +2,13 @@
 Python interface to MIT Learning Module
 """
 import logging
-from pylmod.stellargradebook import StellarGradeBook
+from gradebook import GradeBook
+from membership import Membership
 
 log = logging.getLogger(__name__)  # pylint: disable=C0103
 
 
-class Client(StellarGradeBook):    # pylint: disable=too-few-public-methods
+class Client(GradeBook, Membership):    # pylint: disable=too-few-public-methods
     """
     Python class representing interface to MIT Learning Modules.
     Example usage:
