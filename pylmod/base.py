@@ -147,3 +147,12 @@ class Base(object):
             self.ses.delete, url, data=data, headers=headers
         )
 
+    def get_gradebook_id(self, gbuuid):
+        """return gradebookid for a given gradebook uuid."""
+        gradebook_id = self.get('gradebook', uuid=gbuuid)
+        if 'data' not in gradebook_id:
+            log.info(gradebook_id)
+            msg = "[StellarGradeBook] error in get_gradebook_id - no data"
+            log.info(msg)
+            raise Exception(msg)
+        return gradebook_id['data']['gradebookId']
