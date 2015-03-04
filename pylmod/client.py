@@ -1,14 +1,14 @@
 """
-Python interface to MIT Learning Module
+Python interface to MIT Learning Modules service
 """
 import logging
-from gradebook import GradeBook
-from membership import Membership
+from pylmod.gradebook import GradeBook
+from pylmod.membership import Membership
 
 log = logging.getLogger(__name__)  # pylint: disable=C0103
 
 
-class Client(GradeBook, Membership):    # pylint: disable=too-few-public-methods
+class Client(GradeBook, Membership):  # pylint: disable=too-few-public-methods
     """
     Python class representing interface to MIT Learning Modules.
     Example usage:

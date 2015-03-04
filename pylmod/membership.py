@@ -1,17 +1,16 @@
 """
-
+Membership class
 """
 import logging
+from pylmod.base import Base
 
-from base import Base
-
-
-log = logging.getLogger(__name__)
+log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 class Membership(Base):
     """
-
+    Provide API for functions that return group membership data from MIT
+    Learning Modules service.
     """
 
     def get_student_by_email(self, email, students=None):
@@ -26,9 +25,9 @@ class Membership(Base):
             students = self.get_students()
 
         email = email.lower()
-        for s in students:
-            if s['accountEmail'].lower() == email:
-                return s['studentId'], s
+        for student in students:
+            if student['accountEmail'].lower() == email:
+                return student['studentId'], student
         return None, None
 
     def get_students(self, gradebookid='', simple=False, section_name=''):
@@ -59,7 +58,7 @@ class Membership(Base):
 
         url = 'students/{gradebookId}'
         if section_name:
-            groupid, sec = self.get_section_by_name(section_name)
+            groupid, _ = self.get_section_by_name(section_name)
             if groupid is None:
                 msg = (
                     'in get_students -- Error: '
@@ -77,14 +76,20 @@ class Membership(Base):
 
         if simple:
             # just return dict with keys email, name, section
-            map = dict(
+            student_map = dict(
                 accountEmail='email',
                 displayName='name',
                 section='section'
             )
 
-            def remap(x):
-                newx = dict((map[k], x[k]) for k in map)
+            def remap(students):
+                """
+                Convert mit.edu domain to upper-case for student emails
+
+                :param students:
+                :return:
+                """
+                newx = dict((student_map[k], students[k]) for k in student_map)
                 # match certs
                 newx['email'] = newx['email'].replace('@mit.edu', '@MIT.EDU')
                 return newx
