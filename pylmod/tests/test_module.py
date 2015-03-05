@@ -25,4 +25,7 @@ class TestModule(unittest.TestCase):
         Assert that Client is available from the base module
         """
         import pylmod
-        self.assertTrue('Client' in dir(pylmod))
+        self.assertEqual(
+            ['Client', 'GradeBook', 'Membership'],
+            pylmod.__all__
+        )
