@@ -1,7 +1,5 @@
 """
-
-
-Defines the class StellarGradeBook
+    Python class representing interface to MIT Learning Modules web service.
 """
 
 import json
@@ -14,25 +12,15 @@ log = logging.getLogger(__name__)  # pylint: disable=C0103
 
 class Base(object):
     """
-    Python class representing interface to Stellar gradebook.
+    The Base class provides the transport for accessing MIT LM web service.
 
-    Example usage:
+    The Base class implements the functions that underlie the HTTP calls to
+    the LM web service.  It shouldn't be instantiated directly as it is
+    inherited by the classes that implement the API.
 
-    sg = StellarGradeBook('ichuang-cert.pem')
-    ats = sg.get('academicterms')
-    tc = ats['data'][0]['termCode']
-    sg.get('academicterm',termCode=tc)
-
-    students = sg.get_students()
-    assignments = sg.get_assignments()
-    sg.create_assignment('midterm1', 'mid1', 1.0, 100.0, '11-04-2013')
-
-    sid, student = sg.get_student_by_email(email)
-    aid, assignment = sg.get_assignment_by_name('midterm1')
-    sg.set_grade(aid, sid, 95.2)
-
-    sg.spreadsheet2gradebook(datafn)
-
+    Attributes:
+        cert: The certificate used to authenticate access to LM web service
+        urlbase: The URL of the LM web service
     """
 
     GETS = {'academicterms': '',
@@ -49,16 +37,13 @@ class Base(object):
             self,
             cert,
             urlbase='https://learning-modules.mit.edu:8443/service/gradebook',
-            gbuuid=None
     ):
         """
-        Initialize StellarGradeBook instance.
+        Initialize Base instance.
 
           - urlbase:    URL base for gradebook API
             (still needs certs); default False
-          - gbuuid:     gradebook UUID (eg STELLAR:/project/mitxdemosite)
-
-        """
+         """
         # pem with private and public key application certificate for access
         self.cert = cert
 
@@ -69,19 +54,7 @@ class Base(object):
         self.ses.verify = True  # verify site certificate
 
         log.debug("------------------------------------------------------")
-        log.info("[StellarGradeBook] init base=%s", urlbase)
-        if gbuuid is not None:
-            self.gradebookid = self.get_gradebook_id(gbuuid)
-
-    def get_gradebook_id(self, gbuuid):
-        """return gradebookid for a given gradebook uuid."""
-        gradebook_id = self.get('gradebook', uuid=gbuuid)
-        if 'data' not in gradebook_id:
-            log.info(gradebook_id)
-            msg = "[StellarGradeBook] error in get_gradebook_id - no data"
-            log.info(msg)
-            raise Exception(msg)
-        return gradebook_id['data']['gradebookId']
+        log.info("[PyLmod] init base=%s", urlbase)
 
     def rest_action(self, func, url, **kwargs):
         """Routine to do low-level REST operation, with retry"""
@@ -119,9 +92,9 @@ class Base(object):
 
     def get(self, service, params=None, **kwargs):
         """
-        Generic GET operation for retrieving data from Gradebook API
+        Generic GET operation for retrieving data from Learning Modules API
         Example:
-          sg.get('students/{gradebookId}', params=params, gradebookId=gbid)
+          gbk.get('students/{gradebookId}', params=params, gradebookId=gbid)
         """
         urlfmt = '{base}/' + service + self.GETS.get(service, '')
         url = urlfmt.format(base=self.urlbase, **kwargs)
@@ -131,7 +104,7 @@ class Base(object):
 
     def post(self, service, data, **kwargs):
         """
-        Generic POST operation for sending data to Gradebook API.
+        Generic POST operation for sending data to Learning Modules API.
         data should be a JSON string or a dict.  If it is not a string,
         it is turned into a JSON string for the POST body.
         """
@@ -144,7 +117,7 @@ class Base(object):
 
     def delete(self, service, data, **kwargs):
         """
-        Generic DELETE operation for Gradebook API.
+        Generic DELETE operation for Learning Modules API.
         """
         urlfmt = '{base}/' + service
         url = urlfmt.format(base=self.urlbase, **kwargs)

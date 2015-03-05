@@ -1,5 +1,5 @@
 """
-PyLmod is a module that implements MIT Learning Modules API in python
+PyLmod is a module that implements MIT Learning Modules API in Python
 """
 import os.path
 from pkg_resources import get_distribution, DistributionNotFound
@@ -7,7 +7,6 @@ from pkg_resources import get_distribution, DistributionNotFound
 from pylmod.client import Client
 from pylmod.gradebook import GradeBook
 from pylmod.membership import Membership
-from pylmod.base import Base
 
 try:
     DIST = get_distribution('pylmod')
@@ -23,4 +22,4 @@ else:
     __version__ = DIST.version
 
 
-__all__ = ['Base', 'Client', 'GradeBook', 'Membership']
+__all__ = ['Client', 'GradeBook', 'Membership']

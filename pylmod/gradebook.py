@@ -1,5 +1,5 @@
 """
-GradeBook class
+Contains GradeBook class
 """
 import csv
 import json
@@ -11,10 +11,28 @@ log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 class GradeBook(Base):
+    """API for functions that return gradebook data from MIT LMod service.
     """
-    Provide API for functions that return gradebook-related data from MIT
-    Learning Modules service.
-    """
+
+    def __init__(
+            self,
+            cert,
+            urlbase='https://learning-modules.mit.edu:8443/service/gradebook',
+            gbuuid=None
+    ):
+        super(GradeBook, self).__init__(cert, urlbase)
+        if gbuuid is not None:
+            self.gradebookid = self.get_gradebook_id(gbuuid)
+
+    def get_gradebook_id(self, gbuuid):
+        """return gradebookid for a given gradebook uuid."""
+        gradebook_id = self.get('gradebook', uuid=gbuuid)
+        if 'data' not in gradebook_id:
+            log.info(gradebook_id)
+            msg = "[PyLmod] error in get_gradebook_id - no data"
+            log.info(msg)
+            raise Exception(msg)
+        return gradebook_id['data']['gradebookId']
 
     def get_assignment_by_name(self, assignment_name, assignments=None):
         """
@@ -100,7 +118,7 @@ class GradeBook(Base):
                      }
         gradeinfo.update(kwargs)
         log.info(
-            "[StellarGradeBook] student %s set_grade=%s for assignment %s",
+            "[PyLmod] student %s set_grade=%s for assignment %s",
             studentid,
             gradeval,
             assignmentid)
@@ -122,8 +140,8 @@ class GradeBook(Base):
     ):
         """
         Upload grades from CSV format spreadsheet file into the
-        Stellar gradebook.  The spreadsheet should have a column named
-        "External email"; this will be used as the student's email
+        Learning Modules gradebook.  The spreadsheet should have a column
+        named "External email"; this will be used as the student's email
         address (for looking up and matching studentId).
 
         Columns ID,Username,Full Name,edX email,External email are otherwise
