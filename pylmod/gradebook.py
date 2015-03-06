@@ -110,12 +110,13 @@ class GradeBook(Base):
          - gradeval     = numerical grade value
          - gradebookid  = numerical ID for gradebook (optional)
         """
-        gradeinfo = {"studentId": studentid,
-                     "assignmentId": assignmentid,
-                     "mode": 2,
-                     "comment": 'from MITx %s' % time.ctime(time.time()),
-                     "numericGradeValue": str(gradeval)
-                     }
+        gradeinfo = {
+            "studentId": studentid,
+            "assignmentId": assignmentid,
+            "mode": 2,
+            "comment": 'from MITx %s' % time.ctime(time.time()),
+            "numericGradeValue": str(gradeval)
+        }
         gradeinfo.update(kwargs)
         log.info(
             "[PyLmod] student %s set_grade=%s for assignment %s",
@@ -430,9 +431,10 @@ class GradeBook(Base):
                             log.error(msg)
                             raise Exception(msg)
                         assignment_id = resp['data']['assignmentId']
-                        log.info("Assignment %s has Id=%s",
-                                 field, assignment_id
-                                 )
+                        log.info(
+                            "Assignment %s has Id=%s",
+                            field, assignment_id
+                        )
                     assignment2id[field] = assignment_id
 
                 assignment_id = assignment2id[field]

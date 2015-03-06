@@ -5,6 +5,7 @@
 import json
 import logging
 import requests
+from requests.adapters import HTTPAdapter
 
 
 log = logging.getLogger(__name__)  # pylint: disable=C0103
@@ -29,6 +30,7 @@ class Base(object):
 
     GBUUID = 'STELLAR:/project/mitxdemosite'
     TIMEOUT = 200  # connection timeout, seconds
+    RETRIES = 10  # Number of connection retries
 
     verbose = True
     gradebookid = None
@@ -52,43 +54,28 @@ class Base(object):
         self.ses.cert = cert
         self.ses.timeout = self.TIMEOUT  # connection timeout
         self.ses.verify = True  # verify site certificate
+        # Mount the retry adapter to the base url
+        self.ses.mount(urlbase, HTTPAdapter(max_retries=self.RETRIES))
 
         log.debug("------------------------------------------------------")
         log.info("[PyLmod] init base=%s", urlbase)
 
     def rest_action(self, func, url, **kwargs):
         """Routine to do low-level REST operation, with retry"""
-        cnt = 1
-        while cnt < 10:
-            cnt += 1
-            try:
-                return self.rest_action_actual(func, url, **kwargs)
-            except requests.ConnectionError, err:
-                log.error(
-                    "[StellarGradeBook] Error - connection error in "
-                    "rest_action, err=%s", err
-                )
-                log.info("                   Retrying...")
-            except requests.Timeout, err:
-                log.exception(
-                    "[StellarGradeBook] Error - timeout in "
-                    "rest_action, err=%s", err
-                )
-                log.info("                   Retrying...")
-        raise Exception(
-            "[StellarGradeBook] rest_action failure: exceed max retries"
-        )
-
-    def rest_action_actual(self, func, url, **kwargs):
-        """Routine to do low-level REST operation"""
-        log.info('Running request to %s', url)
-        resp = func(url, timeout=self.TIMEOUT, verify=False, **kwargs)
         try:
-            retdat = json.loads(resp.content)
-        except Exception:
-            log.exception(resp.content)
-            raise
-        return retdat
+            response = func(url, timeout=self.TIMEOUT, **kwargs)
+        except requests.RequestException, err:
+            log.exception(
+                "[PyLmod] Error - connection error in "
+                "rest_action, err=%s", err
+            )
+            raise err
+
+        try:
+            return response.json()
+        except ValueError, err:
+            log.exception('Unable to decode %s', response.content)
+            raise err
 
     def get(self, service, params=None, **kwargs):
         """
