@@ -39,10 +39,32 @@ class TestBase(BaseTest):
         Verify the constructor converts all of our parameters into
         proper internal objects.
         """
-        test_base = Base(self.CERT, self.URLBASE)
+        # Strip off base URL to make sure it comes back
+        urlbase = self.URLBASE[:-1]
+        test_base = Base(self.CERT, urlbase)
         self.assertEqual(test_base.urlbase, self.URLBASE)
         self.assertEqual(test_base.ses.cert, self.CERT)
         self.assertIsNone(test_base.gradebookid)
+
+    def test_data_to_json(self):
+        """Verify that we convert python data to json"""
+        data = dict(a='b')
+        self.assertEqual(
+            Base._data_to_json(data),
+            json.dumps(data)
+        )
+        self.assertEqual('a', Base._data_to_json('a'))
+        self.assertEqual('a', Base._data_to_json(unicode('a')))
+
+    def test_url_format(self):
+        """Verify url format does the right thing"""
+        base = Base(self.CERT, self.URLBASE)
+        service = 'assignment'
+        self.assertEqual(
+            '{0}{1}'.format(self.URLBASE, service),
+            base._url_format(service)
+        )
+        self.assertTrue(type(base._url_format(service)), str)
 
     @httpretty.activate
     def test_rest_action_success(self):
@@ -98,3 +120,87 @@ class TestBase(BaseTest):
         rest_function = test_base.ses.get
         with self.assertRaises(requests.ConnectionError):
             test_base.rest_action(rest_function, self.URLBASE)
+
+    @httpretty.activate
+    def test_get_success(self):
+        """Verify that get works as expected"""
+        service = 'notreal'
+        data = dict(a='b')
+        full_url = '{0}{1}'.format(self.URLBASE, service)
+        # Using array here because httpretty auto arrays params
+        params = dict(c=['d'])
+        httpretty.register_uri(
+            httpretty.GET,
+            full_url,
+            body=json.dumps(data),
+        )
+        test_base = Base(self.CERT, self.URLBASE)
+        response_json = test_base.get(service, params=params)
+        self.assertEqual(data, response_json)
+        last_request = httpretty.last_request()
+        self.assertEqual(last_request.querystring, params)
+
+        # Now without params
+        response_json = test_base.get(service)
+        self.assertEqual(data, response_json)
+        last_request = httpretty.last_request()
+        self.assertEqual(last_request.querystring, {})
+
+    def test_get_failure(self):
+        """Verify we are raising properly if a get request fails."""
+        test_base = Base(self.CERT, self.URLBASE)
+        with self.assertRaises(requests.ConnectionError):
+            test_base.get('pinto_beans')
+
+    @httpretty.activate
+    def test_post_success(self):
+        """Verify that post works as expected."""
+        service = 'supercool'
+        full_url = '{0}{1}'.format(self.URLBASE, service)
+        response = dict(a='b')
+        post_data = {'a': 'b'}
+
+        # Apparently the service always returns JSON, but this seems
+        # like a really suspicious assumption.  I would really like to
+        # verify it.
+        httpretty.register_uri(
+            httpretty.POST,
+            full_url,
+            body=json.dumps(response)
+        )
+        test_base = Base(self.CERT, self.URLBASE)
+        response_json = test_base.post(service, data=post_data)
+        self.assertEqual(response, response_json)
+        last_request = httpretty.last_request()
+        self.assertEqual(last_request.parsed_body, post_data)
+
+    def test_post_failure(self):
+        """Verify we are raising properly if a get request fails."""
+        test_base = Base(self.CERT, self.URLBASE)
+        with self.assertRaises(requests.ConnectionError):
+            test_base.post('make-beans', json.dumps(dict(beans='pinto')))
+
+    @httpretty.activate
+    def test_delete_success(self):
+        """Verify that delete works as expected."""
+        service = 'supercool'
+        full_url = '{0}{1}'.format(self.URLBASE, service)
+        response = dict(a='b')
+
+        # Apparently the service always returns JSON, but this seems
+        # like a really suspicious assumption.  I would really like to
+        # verify it.
+        httpretty.register_uri(
+            httpretty.DELETE,
+            full_url,
+            body=json.dumps(response)
+        )
+        test_base = Base(self.CERT, self.URLBASE)
+        response_json = test_base.delete(service)
+        self.assertEqual(response, response_json)
+
+    def test_delete_failure(self):
+        """Verify we are raising properly if a get request fails."""
+        test_base = Base(self.CERT, self.URLBASE)
+        with self.assertRaises(requests.ConnectionError):
+            test_base.delete('my-special-beans')

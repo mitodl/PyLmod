@@ -26,7 +26,7 @@ class GradeBook(Base):
 
     def get_gradebook_id(self, gbuuid):
         """return gradebookid for a given gradebook uuid."""
-        gradebook_id = self.get('gradebook', uuid=gbuuid)
+        gradebook_id = self.get('gradebook', params={'uuid': gbuuid})
         if 'data' not in gradebook_id:
             log.info(gradebook_id)
             msg = "[PyLmod] error in get_gradebook_id - no data"
@@ -56,8 +56,10 @@ class GradeBook(Base):
                       includeGradingStats='false')
 
         dat = self.get(
-            'assignments/{gradebookId}',
-            params=params, gradebookId=gradebookid or self.gradebookid
+            'assignments/{gradebookId}'.format(
+                gradebookId=gradebookid or self.gradebookid
+            ),
+            params=params,
         )
         if simple:
             return [{'AssignmentName': x['name']} for x in dat['data']]
@@ -95,8 +97,7 @@ class GradeBook(Base):
         Delete assignment specified by assignmentId aid.
         """
         return self.delete(
-            'assignment/{assignmentId}',
-            data={}, assignmentId=aid
+            'assignment/{assignmentId}'.format(assignmentId=aid),
         )
 
     def set_grade(  # pylint: disable=too-many-arguments
@@ -124,17 +125,22 @@ class GradeBook(Base):
             gradeval,
             assignmentid)
         return self.post(
-            'grades/{gradebookId}',
+            'grades/{gradebookId}'.format(
+                gradebookId=gradebookid or self.gradebookid
+            ),
             data=gradeinfo,
-            gradebookId=gradebookid or self.gradebookid
         )
 
     def multi_grade(self, garray, gradebookid=''):
         """
         Set multiple grades for students.
         """
-        return self.post('multiGrades/{gradebookId}', data=garray,
-                         gradebookId=gradebookid or self.gradebookid)
+        return self.post(
+            'multiGrades/{gradebookId}'.format(
+                gradebookId=gradebookid or self.gradebookid
+            ),
+            data=garray,
+        )
 
     def spreadsheet2gradebook(
             self, datafn, email_field=None, single=False
@@ -208,9 +214,10 @@ class GradeBook(Base):
         params = dict(includeMembers='false')
 
         sdat = self.get(
-            'sections/{gradebookId}',
-            params=params,
-            gradebookId=gradebookid or self.gradebookid
+            'sections/{gradebookId}'.format(
+                gradebookId=gradebookid or self.gradebookid
+            ),
+            params=params
         )
 
         if simple:
@@ -283,12 +290,13 @@ class GradeBook(Base):
                 )
                 log.critical(msg)
                 raise Exception(msg)
-            url += '/section/%s' % groupid
+            url += '/section/{0}'.format(groupid)
 
         sdat = self.get(
-            url,
+            url.format(
+                gradebookId=gradebookid or self.gradebookid
+            ),
             params=params,
-            gradebookId=gradebookid or self.gradebookid
         )
 
         if simple:
