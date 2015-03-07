@@ -37,9 +37,6 @@ class GradeBook(Base):
             u'data':{...}
         }
 
-    The Gradebook API returns the ``data`` value as a Python data structure,
-    either a list or a dictionary.
-
     API reference at
     https://learning-modules-test.mit.edu/service/gradebook/doc.html
     """
@@ -446,6 +443,19 @@ class GradeBook(Base):
             gradebook_id (str): unique identifier for gradebook, i.e. `2314`
             simple (bool): return a list of section names only
 
+        An example return value is:
+
+        .. code-block:: json
+
+            [{
+                "name": "Unassigned",
+                "editable": false,
+                "members": null,
+                "shortName": "def",
+                "staffs": null,
+                "groupId": 1293925
+            }]
+
         Raises:
             requests.RequestException
             ValueError
@@ -554,7 +564,6 @@ class GradeBook(Base):
                 u'nickName': u'Molly',
                 u'email': u'stellar.test2@gmail.com'
             },]
-
 
         """
         # These are parameters required for the remote API call, so
