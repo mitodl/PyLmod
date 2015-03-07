@@ -181,6 +181,57 @@ class GradeBook(Base):
 
     def get_sections(self, gradebook_id='', simple=False):
         """
+        Upload grades from CSV format spreadsheet file into the
+        Learning Modules gradebook.  The spreadsheet should have a column
+        named "External email"; this will be used as the student's email
+        address (for looking up and matching studentId).
+
+        Columns ID,Username,Full Name,edX email,External email are otherwise
+        disregarded.  All other columns are taken as assignments.
+
+        datafn = filename of data file, or readable file object
+
+        If create_assignments=True:
+            missing assignments(ie not in gradebook)
+        are created.
+
+        If single=True then grades are transferred one at a time, slowly.
+
+        If email_field is specified, then that
+        field name is taken as the student's email.
+
+        TODO: give specification for default assignment grade_max and due date?
+        returns dict, dt-time-delta
+        """
+        non_assignment_fields = [
+            'ID', 'Username', 'Full Name', 'edX email', 'External email'
+        ]
+
+        if email_field is not None:
+            non_assignment_fields.append(email_field)
+        else:
+            email_field = 'External email'
+
+        if not hasattr(datafn, 'read'):
+            file_pointer = open(datafn)
+        else:
+            file_pointer = datafn
+        creader = csv.DictReader(file_pointer, dialect='excel')
+
+        if single:
+            self._spreadsheet2gradebook_slow(
+                creader, email_field, non_assignment_fields
+            )
+            resp = None
+        else:
+            resp = self._spreadsheet2gradebook_multi(
+                creader, email_field, non_assignment_fields
+            )
+
+        return resp
+
+    def get_sections(self, gradebookid='', simple=False):
+        """
         return list of sections for a given gradebook,
         specified by a gradebookid.
         sample return:
@@ -252,6 +303,53 @@ class GradeBook(Base):
           u'nickName': u'Molly',
           u'email': u'stellar.test2@gmail.com'
         }
+        Get student based on email address.  Calls self.get_students
+        to get list of all students, if not passed as the students
+        argument.  Returns studentid, student dict, if found.
+
+        return None, None if not found.
+        """
+        if students is None:
+            students = self.get_students()
+
+        email = email.lower()
+        for student in students:
+            if student['accountEmail'].lower() == email:
+                return student['studentId'], student
+        return None, None
+
+    def get_students(self, gradebookid='', simple=False, section_name=''):
+        """Get the students for a Gradebook.
+
+        Get the students in the Gradebook's roster, or optionally, those
+        students in a specific section.
+
+        Args:
+            gradebookid:
+            simple:
+            section_name:
+
+        Returns:
+            A list of students for a given gradebook, specified by
+            a gradebookid. For example:
+            {
+                u'accountEmail': u'stellar.test2@gmail.com',
+                u'displayName': u'Molly Parker',
+                u'photoUrl': None,
+                u'middleName': None,
+                u'section': u'Unassigned',
+                u'sectionId': 1293925,
+                u'editable': False,
+                u'overallGradeInformation': None,
+                u'studentId': 1145,
+                u'studentAssignmentInfo': None,
+                u'sortableName': u'Parker, Molly',
+                u'surname': u'Parker',
+                u'givenName': u'Molly',
+                u'nickName': u'Molly',
+                u'email': u'stellar.test2@gmail.com'
+            }
+
         """
         # These are parameters required for the remote API call, so
         # there aren't too many arguments, or too man variables
