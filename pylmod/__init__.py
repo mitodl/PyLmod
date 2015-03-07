@@ -25,5 +25,7 @@ except DistributionNotFound:  # pragma: no cover
 else:
     __version__ = DIST.version
 
+VERSION = __version__
+
 
 __all__ = ['Client', 'GradeBook', 'Membership']

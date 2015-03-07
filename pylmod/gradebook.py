@@ -481,7 +481,7 @@ class GradeBook(Base):
                 assignment_id = assignment2id[field]
                 successful = True
                 try:
-                    # Try to convert to numberic, but keep grading the
+                    # Try to convert to numeric, but keep grading the
                     # rest anyway if any particular grade isn't a number
                     gradeval = float(row[field]) * 1.0
                 except ValueError as err:
