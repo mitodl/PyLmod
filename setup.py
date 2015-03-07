@@ -3,7 +3,8 @@ import sys
 
 from setuptools import setup, find_packages
 from setuptools.command.test import test as testcommand
-from pylmod import __version__
+
+VERSION = __import__('pylmod').VERSION
 
 with open('test_requirements.txt') as test_reqs:
     tests_require = test_reqs.readlines(),
