@@ -1,6 +1,7 @@
 """
 PyLmod is a module that implements MIT Learning Modules API in Python
 """
+
 import os.path
 from pkg_resources import get_distribution, DistributionNotFound
 
@@ -23,6 +24,8 @@ except DistributionNotFound:  # pragma: no cover
     __version__ = 'Please install this project with setup.py'
 else:
     __version__ = DIST.version
+
+VERSION = __version__
 
 
 __all__ = ['Client', 'GradeBook', 'Membership']
