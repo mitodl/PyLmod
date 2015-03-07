@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)  # pylint: disable=C0103
 
 class Base(object):
     """
-    Base provides the transport for accessing the MIT Learning Modules (LMod)
+    Base provides the transport for accessing the MIT Learning Modules (LMod).
 
     The Base class implements the functions that underlie the HTTP calls to
     the MIT Learning Modules (LMod) web service.  It shouldn't be
@@ -24,7 +24,9 @@ class Base(object):
         cert (unicode):
             file path to the certificate used to authenticate access
             to LMod web service
-        urlbase (str): The URL of the LMod web service
+        urlbase (str):
+            The URL of the LMod web service. i.e.
+            learning-modules.mit.edu or learning-modules-test.mit.edu
     """
     GBUUID = 'STELLAR:/project/mitxdemosite'
     TIMEOUT = 200  # connection timeout, seconds
@@ -38,13 +40,13 @@ class Base(object):
             cert,
             urlbase='https://learning-modules.mit.edu:8443/service/gradebook',
     ):
-        """initialize Base instance
+        """Initialize Base instance.
 
         Args:
-        cert (unicode):
-            file path to the certificate used to authenticate access
-            to LMod web service
-        urlbase (str): URL base for gradebook API
+            cert (unicode):
+                file path to the certificate used to authenticate access
+                to LMod web service
+            urlbase (str): URL base for gradebook API
 
          """
         # pem with private and public key application certificate for access
@@ -65,7 +67,7 @@ class Base(object):
 
     @staticmethod
     def _data_to_json(data):
-        """Convert to json if it isn't already a string
+        """Convert to json if it isn't already a string.
 
         Args:
             data (str): data to convert to json
@@ -75,7 +77,7 @@ class Base(object):
         return data
 
     def _url_format(self, service):
-        """Generate URL from urlbase, service
+        """Generate URL from urlbase and service.
 
         Args:
             service (str): The endpoint service to use, i.e. gradebook
@@ -90,7 +92,7 @@ class Base(object):
         return base_service_url
 
     def rest_action(self, func, url, **kwargs):
-        """Routine to do low-level REST operation, with retry
+        """Routine to do low-level REST operation, with retry.
 
         Args:
             func (callable): API function to call
@@ -101,6 +103,8 @@ class Base(object):
             requests.RequestException
             ValueError
 
+        Returns:
+            json
         """
         try:
             response = func(url, timeout=self.TIMEOUT, **kwargs)
@@ -118,11 +122,11 @@ class Base(object):
             raise err
 
     def get(self, service, params=None):
-        """generic GET operation for retrieving data from Learning Modules API
+        """Generic GET operation for retrieving data from Learning Modules API.
 
         Args:
             service (str): The endpoint service to use, i.e. gradebook
-            params :
+            params (dict): additional parameters to add to the call
 
         Example:
           gbk.get('students/{gradebookId}', params=params, gradebookId=gbid)
@@ -133,14 +137,14 @@ class Base(object):
         return self.rest_action(self.ses.get, url, params=params)
 
     def post(self, service, data):
-        """generic POST operation for sending data to Learning Modules API.
+        """Generic POST operation for sending data to Learning Modules API.
 
-        data should be a JSON string or a dict.  If it is not a string,
+        Data should be a JSON string or a dict.  If it is not a string,
         it is turned into a JSON string for the POST body.
 
         Args:
-            service:
-            data:
+            service (str): The endpoint service to use, i.e. gradebook
+            data (json or dict): the data payload
 
         """
         url = self._url_format(service)
@@ -150,10 +154,10 @@ class Base(object):
         return self.rest_action(self.ses.post, url, data=data, headers=headers)
 
     def delete(self, service):
-        """generic DELETE operation for Learning Modules API.
+        """Generic DELETE operation for Learning Modules API.
 
         Args:
-            service:
+            service (str): The endpoint service to use, i.e. gradebook
 
         """
         url = self._url_format(service)
