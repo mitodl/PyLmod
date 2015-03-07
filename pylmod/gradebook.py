@@ -196,20 +196,25 @@ class GradeBook(Base):
         return resp
 
     def get_sections(self, gradebookid='', simple=False):
-        """
-        return list of sections for a given gradebook,
-        specified by a gradebookid.
-        sample return:
-        [
-          {
-            "name": "Unassigned",
-            "editable": false,
-            "members": null,
-            "shortName": "def",
-            "staffs": null,
-            "groupId": 1293925
-          }
-        ]
+        """return list of sections for a given gradebook.
+
+        Args:
+            gradebookid:
+            simple:
+
+        Returns:
+            A list of sections for a given gradebook id. For example:
+
+            [
+                {
+                    "name": "Unassigned",
+                    "editable": false,
+                    "members": null,
+                    "shortName": "def",
+                    "staffs": null,
+                    "groupId": 1293925
+                }
+            ]
         """
         params = dict(includeMembers='false')
 
@@ -255,27 +260,37 @@ class GradeBook(Base):
         return None, None
 
     def get_students(self, gradebookid='', simple=False, section_name=''):
-        """
-        return list of students for a given gradebook,
-        specified by a gradebookid.
-        example return list element:
-        {
-          u'accountEmail': u'stellar.test2@gmail.com',
-          u'displayName': u'Molly Parker',
-          u'photoUrl': None,
-          u'middleName': None,
-          u'section': u'Unassigned',
-          u'sectionId': 1293925,
-          u'editable': False,
-          u'overallGradeInformation': None,
-          u'studentId': 1145,
-          u'studentAssignmentInfo': None,
-          u'sortableName': u'Parker, Molly',
-          u'surname': u'Parker',
-          u'givenName': u'Molly',
-          u'nickName': u'Molly',
-          u'email': u'stellar.test2@gmail.com'
-        }
+        """Get the students for a Gradebook.
+
+        Get the students in the Gradebook's roster, or optionally, those
+        students in a specific section.
+
+        Args:
+            gradebookid:
+            simple:
+            section_name:
+
+        Returns:
+            A list of students for a given gradebook, specified by
+            a gradebookid. For example:
+            {
+                u'accountEmail': u'stellar.test2@gmail.com',
+                u'displayName': u'Molly Parker',
+                u'photoUrl': None,
+                u'middleName': None,
+                u'section': u'Unassigned',
+                u'sectionId': 1293925,
+                u'editable': False,
+                u'overallGradeInformation': None,
+                u'studentId': 1145,
+                u'studentAssignmentInfo': None,
+                u'sortableName': u'Parker, Molly',
+                u'surname': u'Parker',
+                u'givenName': u'Molly',
+                u'nickName': u'Molly',
+                u'email': u'stellar.test2@gmail.com'
+            }
+
         """
         params = dict(includePhoto='false', includeGradeInfo='false',
                       includeGradeHistory='false', includeMakeupGrades='false')
