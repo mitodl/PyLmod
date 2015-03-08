@@ -13,10 +13,12 @@ try:
     # Normalize case for Windows systems
     DIST_LOC = os.path.normcase(DIST.location)
     HERE = os.path.normcase(__file__)
-    if not HERE.startswith(os.path.join(DIST_LOC, 'pylmod')):
+    if not HERE.startswith(
+            os.path.join(DIST_LOC, 'pylmod')
+    ):  # pragma: no cover
         # not installed, but there is another version that *is*
         raise DistributionNotFound
-except DistributionNotFound:
+except DistributionNotFound:  # pragma: no cover
     __version__ = 'Please install this project with setup.py'
 else:
     __version__ = DIST.version
