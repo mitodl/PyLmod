@@ -59,6 +59,9 @@ class GradeBook(Base):
         parameters are returned, but the response time with avg_stats
         and grading_stats enabled is significantly longer.
         """
+        # These are parameters required for the remote API call, so
+        # there aren't too many arguments
+        # pylint: disable=too-many-arguments
         params = dict(
             includeMaxPoints=json.dumps(max_points),
             includeAvgStats=json.dumps(avg_stats),
@@ -224,7 +227,7 @@ class GradeBook(Base):
             simple=False,
             section_name='',
             include_photo=False,
-            include_gradeInfo=False,
+            include_grade_info=False,
             include_grade_history=False,
             include_makeup_grades=False
     ):
@@ -250,10 +253,14 @@ class GradeBook(Base):
           u'email': u'stellar.test2@gmail.com'
         }
         """
+        # These are parameters required for the remote API call, so
+        # there aren't too many arguments, or too man variables
+        # pylint: disable=too-many-arguments,too-many-locals
+
         # Set params by arguments
         params = dict(
             includePhoto=json.dumps(include_photo),
-            includeGradeInfo=json.dumps(include_photo),
+            includeGradeInfo=json.dumps(include_grade_info),
             includeGradeHistory=json.dumps(include_grade_history),
             includeMakeupGrades=json.dumps(include_makeup_grades),
         )

@@ -9,6 +9,9 @@ class BaseTest(TestCase):
     """
     Base class with convenient constants and URL endpoints for pylmod testing.
     """
+    # This should be removed if we end up with common methods, but for
+    # now they are just common attributes.
+    # pylint: disable=too-few-public-methods
     DATA_ROOT = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
         'data'

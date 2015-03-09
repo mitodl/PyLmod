@@ -8,6 +8,7 @@ from pylmod.client import Client
 from pylmod.gradebook import GradeBook
 from pylmod.membership import Membership
 
+# pylint: disable=no-member
 try:
     DIST = get_distribution('pylmod')
     # Normalize case for Windows systems

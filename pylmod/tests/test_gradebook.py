@@ -20,6 +20,8 @@ from pylmod.tests.common import BaseTest
 class TestGradebook(BaseTest):
     """Validate defined gradebook methods in GradeBook class
     """
+    # Unit tests generally should do protected-accesses
+    # pylint: disable=protected-access
     GRADEBOOK_ID = 1234
 
     ASSIGNMENT_BODY = {
@@ -108,6 +110,11 @@ class TestGradebook(BaseTest):
 
     @staticmethod
     def _get_grades():
+        """Return a dictionary list of grades.
+
+        Since it has a dynamic time value these need to be generated
+        with a function as close to the response time as possible.
+        """
         return [
             {
                 'studentId': 1,
@@ -620,7 +627,6 @@ class TestGradebook(BaseTest):
         with tempfile.NamedTemporaryFile(delete=True) as temp_file:
             gradebook.spreadsheet2gradebook(temp_file.name)
             called_with = multi_patch.call_args
-            print(called_with)
             csv_patch.assert_called_once()
             self.assertEqual(called_with[0][1], email_field)
             self.assertEqual(called_with[0][2], non_assignment_fields)
@@ -630,7 +636,6 @@ class TestGradebook(BaseTest):
         gradebook.spreadsheet2gradebook(csv_patch, alternate_email_field)
         non_assignment_fields.append(alternate_email_field)
         called_with = multi_patch.call_args
-        print(called_with)
         csv_patch.assert_called_once()
         self.assertEqual(called_with[0][1], alternate_email_field)
         self.assertEqual(called_with[0][2], non_assignment_fields)
