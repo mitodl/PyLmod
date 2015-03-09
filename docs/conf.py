@@ -11,7 +11,7 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-from pylmod import VERSION
+from pylmod import __version__
 import sphinx_bootstrap_theme
 
 # -- General configuration ------------------------------------------------
@@ -44,9 +44,9 @@ copyright = u'2015, MIT Office of Digital Learning'
 # built documents.
 #
 # The short X.Y version.
-version = VERSION
+version = __version__
 # The full version, including alpha/beta/rc tags.
-release = VERSION
+release = __version__
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
