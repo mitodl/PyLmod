@@ -13,6 +13,8 @@ from pylmod.tests.common import BaseTest
 
 def raise_timeout(request, uri, headers):
     """Raise a socket timeout during an httpretty call."""
+    # Required signature for httpretty callback
+    # pylint: disable=unused-argument
     raise socket.timeout('timeout')
 
 
@@ -20,7 +22,8 @@ class TestBase(BaseTest):
     """
     Verify basic RESTful capability and error handling in the base class.
     """
-
+    # Unit tests generally should do protected-accesses
+    # pylint: disable=protected-access
     def _register_uri(self, body=None, responses=None, timeout=False):
         """Register base URI with responses and/or body"""
 
@@ -99,8 +102,8 @@ class TestBase(BaseTest):
         test_base = Base(self.CERT, self.URLBASE)
         rest_function = test_base.ses.get
         with self.assertRaisesRegexp(
-                requests.ConnectionError,
-                'Max retries exceeded with url'
+            requests.ConnectionError,
+            'Max retries exceeded with url'
         ):
             test_base.rest_action(rest_function, self.URLBASE)
 

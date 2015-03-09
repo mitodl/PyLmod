@@ -5,13 +5,22 @@ import csv
 import json
 import logging
 import time
+
 from pylmod.base import Base
+from pylmod.exceptions import (
+    PyLmodUnexpectedData,
+    PyLmodFailedAssignmentCreation,
+    PyLmodNoSuchSection,
+)
 
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 class GradeBook(Base):
     """API for functions that return gradebook data from MIT LMod service.
+
+    API reference at
+    https://learning-modules-test.mit.edu/service/gradebook/doc.html
     """
 
     def __init__(
@@ -22,17 +31,53 @@ class GradeBook(Base):
     ):
         super(GradeBook, self).__init__(cert, urlbase)
         if gbuuid is not None:
-            self.gradebookid = self.get_gradebook_id(gbuuid)
+            self.gradebook_id = self.get_gradebook_id(gbuuid)
 
     def get_gradebook_id(self, gbuuid):
         """return gradebookid for a given gradebook uuid."""
-        gradebook_id = self.get('gradebook', params={'uuid': gbuuid})
-        if 'data' not in gradebook_id:
-            log.info(gradebook_id)
-            msg = "[PyLmod] error in get_gradebook_id - no data"
-            log.info(msg)
-            raise Exception(msg)
-        return gradebook_id['data']['gradebookId']
+        gradebook = self.get('gradebook', params={'uuid': gbuuid})
+        if 'data' not in gradebook:
+            failure_messsage = ('Error in get_gradebook_id '
+                                'for {0} - no data'.format(
+                                    gradebook
+                                ))
+            log.error(failure_messsage)
+            raise PyLmodUnexpectedData(failure_messsage)
+        return gradebook['data']['gradebookId']
+
+    def get_assignments(
+            self,
+            gradebook_id='',
+            simple=False,
+            max_points=True,
+            avg_stats=False,
+            grading_stats=False
+    ):
+        """
+        return list of assignments for a given gradebook,
+        specified by a gradebookid.  You can control if additional
+        parameters are returned, but the response time with avg_stats
+        and grading_stats enabled is significantly longer.
+        """
+        # These are parameters required for the remote API call, so
+        # there aren't too many arguments
+        # pylint: disable=too-many-arguments
+        params = dict(
+            includeMaxPoints=json.dumps(max_points),
+            includeAvgStats=json.dumps(avg_stats),
+            includeGradingStats=json.dumps(grading_stats)
+        )
+
+        assignments = self.get(
+            'assignments/{gradebookId}'.format(
+                gradebookId=gradebook_id or self.gradebook_id
+            ),
+            params=params,
+        )
+        if simple:
+            return [{'AssignmentName': x['name']}
+                    for x in assignments['data']]
+        return assignments['data']
 
     def get_assignment_by_name(self, assignment_name, assignments=None):
         """
@@ -46,156 +91,95 @@ class GradeBook(Base):
                 return assignment['assignmentId'], assignment
         return None, None
 
-    def get_assignments(self, gradebookid='', simple=False):
-        """
-        return list of assignments for a given gradebook,
-        specified by a gradebookid.
-        """
-        params = dict(includeMaxPoints='true',
-                      includeAvgStats='false',
-                      includeGradingStats='false')
-
-        dat = self.get(
-            'assignments/{gradebookId}'.format(
-                gradebookId=gradebookid or self.gradebookid
-            ),
-            params=params,
-        )
-        if simple:
-            return [{'AssignmentName': x['name']} for x in dat['data']]
-        return dat['data']
-
     def create_assignment(  # pylint: disable=too-many-arguments
             self,
             name,
-            shortname,
+            short_name,
             weight,
-            maxpoints,
-            duedatestr,
-            gradebookid='',
+            max_points,
+            due_date_str,
+            gradebook_id='',
             **kwargs
     ):
         """
         Create a new assignment.
         """
-        data = {"name": name,
-                "shortName": shortname,
-                "weight": weight,
-                'graderVisible': False,
-                'gradingSchemeType': "NUMERIC",
-                "gradebookId": gradebookid or self.gradebookid,
-                "maxPointsTotal": maxpoints,
-                "dueDateString": duedatestr}
+        data = {
+            'name': name,
+            'shortName': short_name,
+            'weight': weight,
+            'graderVisible': False,
+            'gradingSchemeType': 'NUMERIC',
+            'gradebookId': gradebook_id or self.gradebook_id,
+            'maxPointsTotal': max_points,
+            'dueDateString': due_date_str
+        }
         data.update(kwargs)
-        log.info("[StellaGradeBook] Creating assignment %s", name)
-        ret = self.post('assignment', data)
-        log.debug('ret=%s', ret)
-        return ret
+        log.info("Creating assignment %s", name)
+        response = self.post('assignment', data)
+        log.debug('Received response data: %s', response)
+        return response
 
-    def delete_assignment(self, aid):
+    def delete_assignment(self, assignment_id):
         """
-        Delete assignment specified by assignmentId aid.
+        Delete assignment specified by assignmentId assignment_id.
         """
         return self.delete(
-            'assignment/{assignmentId}'.format(assignmentId=aid),
+            'assignment/{assignmentId}'.format(assignmentId=assignment_id),
         )
 
-    def set_grade(  # pylint: disable=too-many-arguments
-            self, assignmentid, studentid, gradeval, gradebookid='', **kwargs
+    def set_grade(
+            self,
+            assignment_id,
+            student_id,
+            grade_value,
+            gradebook_id='',
+            **kwargs
     ):
         """
         Set numerical grade for student & assignment.
 
-         - assignmentid = numerical ID for assignment
-         - studentid    = numerical ID for student
-         - gradeval     = numerical grade value
-         - gradebookid  = numerical ID for gradebook (optional)
+         - assignment_id = numerical ID for assignment
+         - student_id    = numerical ID for student
+         - grade_val     = numerical grade value
+         - gradebook_id  = numerical ID for gradebook (optional)
         """
-        gradeinfo = {
-            "studentId": studentid,
-            "assignmentId": assignmentid,
-            "mode": 2,
-            "comment": 'from MITx %s' % time.ctime(time.time()),
-            "numericGradeValue": str(gradeval)
+        # pylint: disable=too-many-arguments
+
+        # numericGradeValue stringified because 'x' is a possible
+        # value for excused grades.
+        grade_info = {
+            'studentId': student_id,
+            'assignmentId': assignment_id,
+            'mode': 2,
+            'comment': 'from MITx {0}'.format(time.ctime(time.time())),
+            'numericGradeValue': str(grade_value)
         }
-        gradeinfo.update(kwargs)
+        grade_info.update(kwargs)
         log.info(
-            "[PyLmod] student %s set_grade=%s for assignment %s",
-            studentid,
-            gradeval,
-            assignmentid)
+            "student %s set_grade=%s for assignment %s",
+            student_id,
+            grade_value,
+            assignment_id)
         return self.post(
             'grades/{gradebookId}'.format(
-                gradebookId=gradebookid or self.gradebookid
+                gradebookId=gradebook_id or self.gradebook_id
             ),
-            data=gradeinfo,
+            data=grade_info,
         )
 
-    def multi_grade(self, garray, gradebookid=''):
+    def multi_grade(self, grade_array, gradebook_id=''):
         """
         Set multiple grades for students.
         """
         return self.post(
             'multiGrades/{gradebookId}'.format(
-                gradebookId=gradebookid or self.gradebookid
+                gradebookId=gradebook_id or self.gradebook_id
             ),
-            data=garray,
+            data=grade_array,
         )
 
-    def spreadsheet2gradebook(
-            self, datafn, email_field=None, single=False
-    ):
-        """
-        Upload grades from CSV format spreadsheet file into the
-        Learning Modules gradebook.  The spreadsheet should have a column
-        named "External email"; this will be used as the student's email
-        address (for looking up and matching studentId).
-
-        Columns ID,Username,Full Name,edX email,External email are otherwise
-        disregarded.  All other columns are taken as assignments.
-
-        datafn = filename of data file, or readable file object
-
-        If create_assignments=True:
-            missing assignments(ie not in gradebook)
-        are created.
-
-        If single=True then grades are transferred one at a time, slowly.
-
-        If email_field is specified, then that
-        field name is taken as the student's email.
-
-        TODO: give specification for default assignment grade_max and due date?
-        returns dict, dt-time-delta
-        """
-        non_assignment_fields = [
-            'ID', 'Username', 'Full Name', 'edX email', 'External email'
-        ]
-
-        if email_field is not None:
-            non_assignment_fields.append(email_field)
-        else:
-            email_field = 'External email'
-
-        if not hasattr(datafn, 'read'):
-            file_pointer = open(datafn)
-        else:
-            file_pointer = datafn
-        creader = csv.DictReader(file_pointer, dialect='excel')
-
-        if single:
-            self._spreadsheet2gradebook_slow(
-                creader, email_field, non_assignment_fields
-            )
-            resp = None
-        else:
-            resp = self._spreadsheet2gradebook_multi(
-                creader, email_field, non_assignment_fields
-            )
-
-        return resp
-
-    def get_sections(self, gradebookid='', simple=False):
+    def get_sections(self, gradebook_id='', simple=False):
         """
         return list of sections for a given gradebook,
         specified by a gradebookid.
@@ -213,16 +197,16 @@ class GradeBook(Base):
         """
         params = dict(includeMembers='false')
 
-        sdat = self.get(
+        section_data = self.get(
             'sections/{gradebookId}'.format(
-                gradebookId=gradebookid or self.gradebookid
+                gradebookId=gradebook_id or self.gradebook_id
             ),
             params=params
         )
 
         if simple:
-            return [{'SectionName': x['name']} for x in sdat['data']]
-        return sdat['data']
+            return [{'SectionName': x['name']} for x in section_data['data']]
+        return section_data['data']
 
     def get_section_by_name(self, section_name):
         """
@@ -232,29 +216,21 @@ class GradeBook(Base):
         :return:
         """
         sections = self.get_sections()
-        for sec in sections:
-            if sec['name'] == section_name:
-                return sec['groupId'], sec
+        for section in sections:
+            if section['name'] == section_name:
+                return section['groupId'], section
         return None, None
 
-    def get_student_by_email(self, email, students=None):
-        """
-        Get student based on email address.  Calls self.get_students
-        to get list of all students, if not passed as the students
-        argument.  Returns studentid, student dict, if found.
-
-        return None, None if not found.
-        """
-        if students is None:
-            students = self.get_students()
-
-        email = email.lower()
-        for student in students:
-            if student['accountEmail'].lower() == email:
-                return student['studentId'], student
-        return None, None
-
-    def get_students(self, gradebookid='', simple=False, section_name=''):
+    def get_students(
+            self,
+            gradebook_id='',
+            simple=False,
+            section_name='',
+            include_photo=False,
+            include_grade_info=False,
+            include_grade_history=False,
+            include_makeup_grades=False
+    ):
         """
         return list of students for a given gradebook,
         specified by a gradebookid.
@@ -277,24 +253,33 @@ class GradeBook(Base):
           u'email': u'stellar.test2@gmail.com'
         }
         """
-        params = dict(includePhoto='false', includeGradeInfo='false',
-                      includeGradeHistory='false', includeMakeupGrades='false')
+        # These are parameters required for the remote API call, so
+        # there aren't too many arguments, or too man variables
+        # pylint: disable=too-many-arguments,too-many-locals
+
+        # Set params by arguments
+        params = dict(
+            includePhoto=json.dumps(include_photo),
+            includeGradeInfo=json.dumps(include_grade_info),
+            includeGradeHistory=json.dumps(include_grade_history),
+            includeMakeupGrades=json.dumps(include_makeup_grades),
+        )
 
         url = 'students/{gradebookId}'
         if section_name:
-            groupid, _ = self.get_section_by_name(section_name)
-            if groupid is None:
-                msg = (
+            group_id, _ = self.get_section_by_name(section_name)
+            if group_id is None:
+                failure_message = (
                     'in get_students -- Error: '
                     'No such section %s' % section_name
                 )
-                log.critical(msg)
-                raise Exception(msg)
-            url += '/section/{0}'.format(groupid)
+                log.critical(failure_message)
+                raise PyLmodNoSuchSection(failure_message)
+            url += '/section/{0}'.format(group_id)
 
-        sdat = self.get(
+        student_data = self.get(
             url.format(
-                gradebookId=gradebookid or self.gradebookid
+                gradebookId=gradebook_id or self.gradebook_id
             ),
             params=params,
         )
@@ -319,12 +304,29 @@ class GradeBook(Base):
                 newx['email'] = newx['email'].replace('@mit.edu', '@MIT.EDU')
                 return newx
 
-            return [remap(x) for x in sdat['data']]
+            return [remap(x) for x in student_data['data']]
 
-        return sdat['data']
+        return student_data['data']
 
-    def _spreadsheet2gradebook_multi(  # pylint: disable=too-many-locals
-            self, creader, email_field, non_assignment_fields
+    def get_student_by_email(self, email, students=None):
+        """
+        Get student based on email address.  Calls self.get_students
+        to get list of all students, if not passed as the students
+        argument.  Returns studentid, student dict, if found.
+
+        return None, None if not found.
+        """
+        if students is None:
+            students = self.get_students()
+
+        email = email.lower()
+        for student in students:
+            if student['accountEmail'].lower() == email:
+                return student['studentId'], student
+        return None, None
+
+    def _spreadsheet2gradebook_multi(
+            self, csv_reader, email_field, non_assignment_fields
     ):
         """
         Helper function: Transfer grades from spreadsheet using
@@ -332,123 +334,124 @@ class GradeBook(Base):
         creating a large array containing all grades to transfer, then
         make one call to the gradebook API.
         """
+        # pylint: disable=too-many-locals
         assignments = self.get_assignments()
         students = self.get_students()
         assignment2id = {}
-        garray = []
-        for cdat in creader:
-            email = cdat[email_field]
+        grade_array = []
+        for row in csv_reader:
+            email = row[email_field]
             sid, _ = self.get_student_by_email(email, students)
             if sid is None:
                 log.warning(
                     'Error in spreadsheet2gradebook: cannot find '
                     'student id for email="%s"\n', email
                 )
-            for field in cdat.keys():
-                if field in non_assignment_fields:
-                    continue
-                if field not in assignment2id:
-                    aid, _ = self.get_assignment_by_name(
-                        field, assignments=assignments
-                    )
-                    if aid is None:
-                        name = field
-                        shortname = field[0:3] + field[-2:]
-                        log.info('calling create_assignment from multi')
-                        resp = self.create_assignment(
-                            name, shortname, 1.0, 100.0, '12-15-2013'
-                        )
-                        if (
-                                not resp.get('data', '') or
-                                'assignmentId' not in resp.get('data')
-                        ):
-                            log.warning(
-                                'Failed to create assignment %s', name
-                            )
-                            log.info(resp)
-                            msg = (
-                                "Error ! Failed to create assignment %s", name
-                            )
-                            log.critical(msg)
-                            raise Exception(msg)
-                        aid = resp['data']['assignmentId']
-                    log.info("Assignment %s has Id=%s", field, aid)
-                    assignment2id[field] = aid
-
-                aid = assignment2id[field]
-                successful = True
-                try:
-                    gradeval = float(cdat[field]) * 1.0
-                except ValueError as err:
-                    log.exception(
-                        "Failed in converting grade for student %s"
-                        ", cdat=%s, err=%s", sid, cdat, err
-                    )
-                    successful = False
-                if successful:
-                    garray.append(
-                        {"studentId": sid,
-                         "assignmentId": aid,
-                         "numericGradeValue": gradeval,
-                         "mode": 2,
-                         "isGradeApproved": False}
-                    )
-        log.info(
-            'Data read from file, doing multiGrades API '
-            'call (%d grades)', len(garray)
-        )
-        tstart = time.time()
-        resp = self.multi_grade(garray)
-        duration = time.time() - tstart
-        log.info(
-            'multiGrades API call done (%d bytes returned) '
-            'dt=%6.2f seconds.', len(json.dumps(resp)), duration
-        )
-        return resp, duration
-
-    def _spreadsheet2gradebook_slow(  # pylint: disable=too-many-locals
-            self, creader, email_field, non_assignment_fields
-    ):
-        """
-        Helper function: Transfer grades from spreadsheet one at a time
-        """
-        assignments = self.get_assignments()
-        assignment2id = {}
-        students = self.get_students()
-        for cdat in creader:
-            email = cdat[email_field]
-            sid, _ = self.get_student_by_email(email, students)
-            for field in cdat.keys():
+            for field in row.keys():
                 if field in non_assignment_fields:
                     continue
                 if field not in assignment2id:
                     assignment_id, _ = self.get_assignment_by_name(
                         field, assignments=assignments
                     )
+                    # If no assignment found, try creating it.
                     if assignment_id is None:
                         name = field
                         shortname = field[0:3] + field[-2:]
-                        resp = self.create_assignment(
+                        log.info('calling create_assignment from multi')
+                        response = self.create_assignment(
                             name, shortname, 1.0, 100.0, '12-15-2013'
                         )
-                        if 'assignmentId' not in resp['data']:
-                            log.info(resp)
-                            msg = (
-                                "Error ! Failed to create assignment %s", name
+                        if (
+                                not response.get('data', '') or
+                                'assignmentId' not in response.get('data')
+                        ):
+                            failure_message = (
+                                "Error! Failed to create assignment {0}"
+                                ", got {1}".format(
+                                    name, response
+                                )
                             )
-                            log.error(msg)
-                            raise Exception(msg)
-                        assignment_id = resp['data']['assignmentId']
-                        log.info(
-                            "Assignment %s has Id=%s",
-                            field, assignment_id
-                        )
+                            log.critical(failure_message)
+                            raise PyLmodFailedAssignmentCreation(
+                                failure_message
+                            )
+                        assignment_id = response['data']['assignmentId']
+                    log.info("Assignment %s has Id=%s", field, assignment_id)
                     assignment2id[field] = assignment_id
 
                 assignment_id = assignment2id[field]
-                gradeval = float(cdat[field]) * 1.0
-                log.info(
-                    "--> Student %s assignment %s grade %s",
-                    email, field, gradeval
-                )
-                self.set_grade(assignment_id, sid, gradeval)
+                successful = True
+                try:
+                    # Try to convert to numberic, but keep grading the
+                    # rest anyway if any particular grade isn't a number
+                    gradeval = float(row[field]) * 1.0
+                except ValueError as err:
+                    log.exception(
+                        "Failed in converting grade for student %s"
+                        ", row=%s, err=%s", sid, row, err
+                    )
+                    successful = False
+                if successful:
+                    grade_array.append({
+                        "studentId": sid,
+                        "assignmentId": assignment_id,
+                        "numericGradeValue": gradeval,
+                        "mode": 2,
+                        "isGradeApproved": False
+                    })
+        # Everything is setup to post, do the post and track the time
+        # it takes.
+        log.info(
+            'Data read from file, doing multiGrades API '
+            'call (%d grades)', len(grade_array)
+        )
+        tstart = time.time()
+        response = self.multi_grade(grade_array)
+        duration = time.time() - tstart
+        log.info(
+            'multiGrades API call done (%d bytes returned) '
+            'dt=%6.2f seconds.', len(json.dumps(response)), duration
+        )
+        return response, duration
+
+    def spreadsheet2gradebook(
+            self, csv_file, email_field=None,
+    ):
+        """
+        Upload grades from CSV format spreadsheet file into the
+        Learning Modules gradebook.  The spreadsheet should have a column
+        named "External email"; this will be used as the student's email
+        address (for looking up and matching studentId).
+
+        Columns ID,Username,Full Name,edX email,External email are otherwise
+        disregarded.  All other columns are taken as assignments.
+
+        csv_file = filename of csv data file, or readable file object
+
+        If email_field is specified, then that
+        field name is taken as the student's email.
+
+        TODO: give specification for default assignment grade_max and due date?
+        returns dict, dt-time-delta
+        """
+        non_assignment_fields = [
+            'ID', 'Username', 'Full Name', 'edX email', 'External email'
+        ]
+
+        if email_field is not None:
+            non_assignment_fields.append(email_field)
+        else:
+            email_field = 'External email'
+
+        if not hasattr(csv_file, 'read'):
+            file_pointer = open(csv_file)
+        else:
+            file_pointer = csv_file
+        csv_reader = csv.DictReader(file_pointer, dialect='excel')
+
+        response = self._spreadsheet2gradebook_multi(
+            csv_reader, email_field, non_assignment_fields
+        )
+
+        return response

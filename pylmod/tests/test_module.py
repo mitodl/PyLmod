@@ -13,7 +13,8 @@ class TestModule(unittest.TestCase):
     and making sure we are exposing our classes
     """
 
-    def test_version(self):
+    @staticmethod
+    def test_version():
         """
         Verify we have a valid semantic version
         """
