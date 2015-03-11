@@ -17,13 +17,14 @@ log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 class GradeBook(Base):
-    """
-    All calls to the LMod service return JSON for all calls. The JSON
-    always contains these items:
+    """API for functions that return gradebook data from MIT LMod service.
 
-    - "status" (1=successful, -1=failed),
-    - "message" (details about any error condition, or success message),
-    - the returned data, if applicable.
+    All calls to the LMod service return JSON for all calls. The JSON always
+    contains
+    "status" (1=successful, -1=failed),
+    "message" (details about any error condition, or success message),
+    and the data being returned if applicable.
+    i.e. {"status":1,"message":"","data":{...}}
 
     and is in this format:
 
@@ -159,7 +160,7 @@ class GradeBook(Base):
             gradebook_id='',
             **kwargs
     ):
-        """create a new assignment
+        """Create a new assignment.
 
         create a new assignment. By default, assignments are are created
         under the `Uncategorized` category.
@@ -203,9 +204,8 @@ class GradeBook(Base):
         return response
 
     def delete_assignment(self, assignment_id):
-        """ delete assignment
-
-        delete assignment specified by assignment Id
+        """
+        Delete assignment specified by assignment Id
 
         Args:
             assignment_id (str): id of assignment to delete
@@ -290,7 +290,7 @@ class GradeBook(Base):
         )
 
     def multi_grade(self, grade_array, gradebook_id=''):
-        """set multiple grades for students
+        """Set multiple grades for students.
 
         set multiple student grades for a gradebook.  The grades are passed
         as an array of dictionaries, of student_id and assignment_id  of
@@ -422,7 +422,7 @@ class GradeBook(Base):
             ValueError
 
         Returns:
-            json
+            example return list element:
 
         .. code-block:: python
 
