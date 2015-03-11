@@ -247,15 +247,18 @@ class GradeBook(Base):
             gradebook_id (str): gradebook id to return sections for.
             simple (bool): return a list of section names only
 
-        # An example return value is:
-        #     [{
-        #         "name": "Unassigned",
-        #         "editable": false,
-        #         "members": null,
-        #         "shortName": "def",
-        #         "staffs": null,
-        #         "groupId": 1293925
-        #     }]
+        An example return value is:
+
+        .. code-block:: json
+
+            [{
+                "name": "Unassigned",
+                "editable": false,
+                "members": null,
+                "shortName": "def",
+                "staffs": null,
+                "groupId": 1293925
+            }]
 
         """
         params = dict(includeMembers='false')
@@ -314,23 +317,25 @@ class GradeBook(Base):
         Returns:
             example return list element:
 
-            # {
-            #     u'accountEmail': u'stellar.test2@gmail.com',
-            #     u'displayName': u'Molly Parker',
-            #     u'photoUrl': None,
-            #     u'middleName': None,
-            #     u'section': u'Unassigned',
-            #     u'sectionId': 1293925,
-            #     u'editable': False,
-            #     u'overallGradeInformation': None,
-            #     u'studentId': 1145,
-            #     u'studentAssignmentInfo': None,
-            #     u'sortableName': u'Parker, Molly',
-            #     u'surname': u'Parker',
-            #     u'givenName': u'Molly',
-            #     u'nickName': u'Molly',
-            #     u'email': u'stellar.test2@gmail.com'
-            # }
+        .. code-block:: python
+
+            {
+                u'accountEmail': u'stellar.test2@gmail.com',
+                u'displayName': u'Molly Parker',
+                u'photoUrl': None,
+                u'middleName': None,
+                u'section': u'Unassigned',
+                u'sectionId': 1293925,
+                u'editable': False,
+                u'overallGradeInformation': None,
+                u'studentId': 1145,
+                u'studentAssignmentInfo': None,
+                u'sortableName': u'Parker, Molly',
+                u'surname': u'Parker',
+                u'givenName': u'Molly',
+                u'nickName': u'Molly',
+                u'email': u'stellar.test2@gmail.com'
+            }
         """
         # These are parameters required for the remote API call, so
         # there aren't too many arguments, or too many variables
