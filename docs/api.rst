@@ -1,5 +1,5 @@
 PyLmod API Docs
-----------------------
+---------------
 
 For convenient reference in development, here are the PyLmod
 API docs.
@@ -7,7 +7,7 @@ API docs.
 Library
 =======
 
-API libraries.
+API documentation.
 
 .. automodule:: pylmod
     :members:
