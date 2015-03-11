@@ -13,15 +13,15 @@ log = logging.getLogger(__name__)  # pylint: disable=C0103
 
 class Base(object):
     """
-    The Base class provides the transport for accessing MIT LM web service.
+    The Base class provides the transport for accessing MIT LMod web service.
 
     The Base class implements the functions that underlie the HTTP calls to
-    the LM web service.  It shouldn't be instantiated directly as it is
+    the LMod web service.  It shouldn't be instantiated directly as it is
     inherited by the classes that implement the API.
 
     Attributes:
-        cert: The certificate used to authenticate access to LM web service
-        urlbase: The URL of the LM web service
+        cert: The certificate used to authenticate access to LMod web service
+        urlbase: The URL of the LMod web service
     """
     GBUUID = 'STELLAR:/project/mitxdemosite'
     TIMEOUT = 200  # connection timeout, seconds
@@ -35,11 +35,12 @@ class Base(object):
             cert,
             urlbase='https://learning-modules.mit.edu:8443/service/gradebook',
     ):
-        """
-        Initialize Base instance.
+        """initialize Base instance
 
-          - urlbase:    URL base for gradebook API
-            (still needs certs); default False
+        Args:
+            cert:
+            urlbase:    URL base for gradebook API
+
          """
         # pem with private and public key application certificate for access
         self.cert = cert
@@ -59,7 +60,11 @@ class Base(object):
 
     @staticmethod
     def _data_to_json(data):
-        """Convert to json if it isn't already a string"""
+        """Convert to json if it isn't already a string
+
+        Args:
+            data:
+        """
         if type(data) not in [str, unicode]:
             data = json.dumps(data)
         return data
@@ -69,6 +74,7 @@ class Base(object):
 
         Args:
             service (str): The endpoint service to use, i.e. gradebook
+
         Returns:
             str: URL to where the request should be made
         """
@@ -79,7 +85,13 @@ class Base(object):
         return base_service_url
 
     def rest_action(self, func, url, **kwargs):
-        """Routine to do low-level REST operation, with retry"""
+        """Routine to do low-level REST operation, with retry
+
+        Args:
+            func (str):
+            url (str):
+
+        """
         try:
             response = func(url, timeout=self.TIMEOUT, **kwargs)
         except requests.RequestException, err:
@@ -96,8 +108,12 @@ class Base(object):
             raise err
 
     def get(self, service, params=None):
-        """
-        Generic GET operation for retrieving data from Learning Modules API
+        """generic GET operation for retrieving data from Learning Modules API
+
+        Args:
+            service:
+            params:
+
         Example:
           gbk.get('students/{gradebookId}', params=params, gradebookId=gbid)
         """
@@ -107,10 +123,15 @@ class Base(object):
         return self.rest_action(self.ses.get, url, params=params)
 
     def post(self, service, data):
-        """
-        Generic POST operation for sending data to Learning Modules API.
+        """generic POST operation for sending data to Learning Modules API.
+
         data should be a JSON string or a dict.  If it is not a string,
         it is turned into a JSON string for the POST body.
+
+        Args:
+            service:
+            data:
+
         """
         url = self._url_format(service)
         data = Base._data_to_json(data)
@@ -119,8 +140,11 @@ class Base(object):
         return self.rest_action(self.ses.post, url, data=data, headers=headers)
 
     def delete(self, service):
-        """
-        Generic DELETE operation for Learning Modules API.
+        """generic DELETE operation for Learning Modules API.
+
+        Args:
+            service:
+
         """
         url = self._url_format(service)
         return self.rest_action(
