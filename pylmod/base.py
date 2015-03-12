@@ -47,12 +47,12 @@ class Base(object):
         self.urlbase = urlbase
         if not urlbase.endswith('/'):
             self.urlbase += '/'
-        self.ses = requests.Session()
-        self.ses.cert = cert
-        self.ses.timeout = self.TIMEOUT  # connection timeout
-        self.ses.verify = True  # verify site certificate
+        self._session = requests.Session()
+        self._session.cert = cert
+        self._session.timeout = self.TIMEOUT  # connection timeout
+        self._session.verify = True  # verify site certificate
         # Mount the retry adapter to the base url
-        self.ses.mount(urlbase, HTTPAdapter(max_retries=self.RETRIES))
+        self._session.mount(urlbase, HTTPAdapter(max_retries=self.RETRIES))
 
         log.debug("------------------------------------------------------")
         log.info("[PyLmod] init urlbase=%s", urlbase)
@@ -104,7 +104,7 @@ class Base(object):
         url = self._url_format(service)
         if params is None:
             params = {}
-        return self.rest_action(self.ses.get, url, params=params)
+        return self.rest_action(self._session.get, url, params=params)
 
     def post(self, service, data):
         """
@@ -116,7 +116,8 @@ class Base(object):
         data = Base._data_to_json(data)
         # Add content-type for body in POST.
         headers = {'content-type': 'application/json'}
-        return self.rest_action(self.ses.post, url, data=data, headers=headers)
+        return self.rest_action(self._session.post, url,
+                                data=data, headers=headers)
 
     def delete(self, service):
         """
@@ -124,5 +125,5 @@ class Base(object):
         """
         url = self._url_format(service)
         return self.rest_action(
-            self.ses.delete, url
+            self._session.delete, url
         )

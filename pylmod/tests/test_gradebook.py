@@ -219,7 +219,7 @@ class TestGradebook(BaseTest):
         urlbase = self.URLBASE[:-1]
         test_base = GradeBook(self.CERT, urlbase)
         self.assertEqual(test_base.urlbase, self.URLBASE)
-        self.assertEqual(test_base.ses.cert, self.CERT)
+        self.assertEqual(test_base._session.cert, self.CERT)
         self.assertIsNone(test_base.gradebookid)
 
     @httpretty.activate

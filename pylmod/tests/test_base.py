@@ -46,7 +46,7 @@ class TestBase(BaseTest):
         urlbase = self.URLBASE[:-1]
         test_base = Base(self.CERT, urlbase)
         self.assertEqual(test_base.urlbase, self.URLBASE)
-        self.assertEqual(test_base.ses.cert, self.CERT)
+        self.assertEqual(test_base._session.cert, self.CERT)
         self.assertIsNone(test_base.gradebookid)
 
     def test_data_to_json(self):
@@ -75,7 +75,7 @@ class TestBase(BaseTest):
         payload = {'a': 'b'}
         self._register_uri(body=json.dumps(payload))
         test_base = Base(self.CERT, self.URLBASE)
-        rest_function = test_base.ses.get
+        rest_function = test_base._session.get
         response = test_base.rest_action(rest_function, self.URLBASE)
         self.assertEqual(payload, response)
 
@@ -91,7 +91,7 @@ class TestBase(BaseTest):
             ]
         )
         test_base = Base(self.CERT, self.URLBASE)
-        rest_function = test_base.ses.get
+        rest_function = test_base._session.get
         response = test_base.rest_action(rest_function, self.URLBASE)
         self.assertEqual(payload, response)
 
@@ -100,7 +100,7 @@ class TestBase(BaseTest):
         """Test the rest timeout indefinitely"""
         self._register_uri(timeout=True)
         test_base = Base(self.CERT, self.URLBASE)
-        rest_function = test_base.ses.get
+        rest_function = test_base._session.get
         with self.assertRaisesRegexp(
             requests.ConnectionError,
             'Max retries exceeded with url'
@@ -112,7 +112,7 @@ class TestBase(BaseTest):
         """Test the rest timeout indefinitely"""
         self._register_uri(body='stuff')
         test_base = Base(self.CERT, self.URLBASE)
-        rest_function = test_base.ses.get
+        rest_function = test_base._session.get
         with self.assertRaises(ValueError):
             test_base.rest_action(rest_function, self.URLBASE)
 
@@ -120,7 +120,7 @@ class TestBase(BaseTest):
         """Test the rest timeout indefinitely"""
         # This will try to actually connect to an invalid service
         test_base = Base(self.CERT, self.URLBASE)
-        rest_function = test_base.ses.get
+        rest_function = test_base._session.get
         with self.assertRaises(requests.ConnectionError):
             test_base.rest_action(rest_function, self.URLBASE)
 
