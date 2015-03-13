@@ -185,12 +185,6 @@ class GradeBook(Base):
                 dictionary containing additional parameters,
                 i.e. totalAverage, graderVisible, and categoryId
 
-        Raises:
-            requests.RequestException
-            ValueError
-
-        Returns:
-            json
         """
         data = {
             'name': name,
@@ -211,6 +205,8 @@ class GradeBook(Base):
     def delete_assignment(self, assignment_id):
         """
         Delete assignment specified by assignment Id
+
+        delete assignment specified by assignment Id
 
         Args:
             assignment_id (str): id of assignment to delete
