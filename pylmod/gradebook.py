@@ -18,14 +18,14 @@ log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 class GradeBook(Base):
     """
-    All calls to the LMod service return JSON for all calls. The JSON always
-    contains
+    All calls to the LMod service return JSON for all calls. The JSON
+    always contains these items:
 
     - "status" (1=successful, -1=failed),
     - "message" (details about any error condition, or success message),
     - the returned data, if applicable.
 
-    for example,
+    and is in this format:
 
     .. code-block:: json
 
@@ -51,6 +51,8 @@ class GradeBook(Base):
         Args:
             gbuuid (str): gradebook uuid, i.e. STELLAR:/project/gbngtest
 
+        Returns:
+            json
         """
         gradebook = self.get('gradebook', params={'uuid': gbuuid})
         if 'data' not in gradebook:
@@ -73,18 +75,25 @@ class GradeBook(Base):
         """get assignments for a gradebook
 
         return list of assignments for a given gradebook,
-        specified by a gradebookid.  You can control if additional
+        specified by a gradebook id.  You can control if additional
         parameters are returned, but the response time with avg_stats
         and grading_stats enabled is significantly longer.
 
         Args:
-            gradebook_id (str): unique identifier
-            simple (bool):
+            gradebook_id (str): unique identifier for gradebook, i.e. `2314`
+            simple (bool): return just assignment names, default=`False`
             max_points (bool):
-            avg_stats (bool)
+                Max points is a property of the grading scheme for the
+                assignment rather than a property of the assignment itself,
+                default=`True`
+            avg_stats (bool): return average grade, default=`False`
             grading_stats (bool):
+                return grading statistics, i.e. number of approved grades,
+                unapproved grades, etc., default=`False`
 
-        """
+        Returns:
+            json
+       """
         # These are parameters required for the remote API call, so
         # there aren't too many arguments
         # pylint: disable=too-many-arguments
@@ -112,8 +121,8 @@ class GradeBook(Base):
         and assignment dict.
 
         Args:
-            assignment_name (str):
-            assignments (str):
+            assignment_name (str): name of assignment
+            assignments (dict): assignments
 
         Returns:
             json
@@ -136,18 +145,28 @@ class GradeBook(Base):
             gradebook_id='',
             **kwargs
     ):
-        """Create a new assignment.
+        """create a new assignment
 
-        create a new assignment
+        create a new assignment. By default, assignments are are created
+        under the `Uncategorized` category.
 
-        Parameters:
+        Args:
             name (str):
-            short_name (str):
-            weight (str):
+                descriptive assignment name,
+                i.e. "new NUMERIC SIMPLE ASSIGNMENT"
+            short_name (str): short, one word, name of assignment, i.e. "SAnew"
+            weight (str): floating point value for weight, i.e. 1.0
             max_points (str):
+                floating point value for maximum point total, i.e. `100.0`
             due_date_str (str):
-            gradebook_id (str):
+                due date as string in `mm-dd-yyyy` format, i.e. 08-21-2011
+            gradebook_id (str): unique identifier for gradebook, i.e. `2314`
+            kwargs (dict):
+                dictionary containing additional parameters,
+                i.e. totalAverage, graderVisible, and categoryId
 
+        Returns:
+            json
         """
         data = {
             'name': name,
@@ -166,12 +185,15 @@ class GradeBook(Base):
         return response
 
     def delete_assignment(self, assignment_id):
-        """
-        Delete assignment specified by assignment Id
+        """ delete assignment
+
+        delete assignment specified by assignment Id
 
         Args:
-            assignment_id (str):
+            assignment_id (str): id of assignment to delete
 
+        Returns:
+            json
         """
         return self.delete(
             'assignment/{assignmentId}'.format(assignmentId=assignment_id),
@@ -187,15 +209,35 @@ class GradeBook(Base):
     ):
         """Set numerical grade for student & assignment.
 
+        Expecting json representation of a single grade to save. Options
+        for grade mode are: OVERALL_GRADE = 1, REGULAR_GRADE = 2
+        To set 'excused' as the grade, enter null for letter and
+        numeric grade values,
+        and pass "x" as the specialGradeValue.
+        ReturnAffectedValues flag determines whether or not to return
+        student cumulative points, and
+        impacted assignment category grades (average and student grade)
+
+        e.g.: {"studentId":1135,
+        "assignmentId":4522,
+        "letterGradeValue":null,
+        "numericGradeValue":50,
+        "booleanGradeValue":null,
+        "specialGradeValue":null,
+        "mode":2,
+        "isGradeApproved":false,
+        "comment":null,
+        "returnAffectedValues": true }
+
         Args:
             assignment_id (str): numerical ID for assignment
             student_id (str): numerical ID for student
             grade_value (str): numerical grade value
             gradebook_id (str): numerical ID for gradebook (optional)
+            kwargs (dict):
 
         Returns:
-            Nothing
-
+            json
         """
         # pylint: disable=too-many-arguments
 
@@ -222,18 +264,30 @@ class GradeBook(Base):
         )
 
     def multi_grade(self, grade_array, gradebook_id=''):
-        """Set multiple grades for students.
+        """set multiple grades for students
 
+        set multiple student grades for a gradebook.  The grades are passed
+        as an array of dictionaries, of student_id and assignment_id  of
         expecting json representation of an array of grades to save.
         Both studentId and assignmentId are required; to set an overall grade,
         pass the root assignment id, which can be gotten either by calling
         get root assignment id, or looking at the assignmentId passed with
         the overall grade info on any student.
 
+        Expecting json representation of a list of grades to save.
+        Options for grade mode are: OVERALL_GRADE = 1, REGULAR_GRADE = 2
+        To set 'excused' as the grade, enter null for letter and numeric
+        grade values, and pass "x" as the specialGradeValue.
+        ReturnAffectedValues flag determines whether or not to return
+        student cumulative points, and impacted assignment category
+        grades (average and student grade)
+
         Args:
             grade_array (dict): an array of grades to save
-            gradebook_id (str):
+            gradebook_id (str): id of gradebook to
 
+        Returns:
+            json
         """
         return self.post(
             'multiGrades/{gradebookId}'.format(
@@ -265,6 +319,8 @@ class GradeBook(Base):
                 "groupId": 1293925
             }]
 
+        Returns:
+            json
         """
         params = dict(includeMembers='false')
 
@@ -286,8 +342,7 @@ class GradeBook(Base):
             section_name (str): section name
 
         Returns:
-            none
-
+            json
         """
         sections = self.get_sections()
         for section in sections:
@@ -313,14 +368,19 @@ class GradeBook(Base):
         Args:
             gradebook_id (str):
             simple (bool):
-            section_name (str):
-            include_photo (bool):
+                if `True`, just return dict with keys email, name,
+                section, default=`False`
+            section_name (str): section name
+            include_photo (bool): include student photo, default=`False`
             include_grade_info (bool):
+                include student's grade info, default=`False`
             include_grade_history (bool):
+                include student's grade history, default=`False`
             include_makeup_grades (bool):
+                include student's makeup grades, default=`False`
 
         Returns:
-            example return list element:
+            json
 
         .. code-block:: python
 
@@ -404,7 +464,11 @@ class GradeBook(Base):
         as the students argument.  Returns studentid, student dict, if found.
 
         Args:
+            email (str):
             students (dict):
+
+        Returns:
+            json
         """
         if students is None:
             students = self.get_students()
@@ -423,13 +487,15 @@ class GradeBook(Base):
         Helper function: Transfer grades from spreadsheet using
         multiGrades (multiple students at a time). We do this by
         creating a large array containing all grades to transfer, then
-        make one call to the gradebook API.
+        make one call to the Gradebook API.
 
         Args:
             csv_reader:
             email_field:
             non_assignment_fields:
 
+        Returns:
+            json
         """
         # pylint: disable=too-many-locals
         assignments = self.get_assignments()
@@ -522,8 +588,9 @@ class GradeBook(Base):
         named "External email"; this will be used as the student's email
         address (for looking up and matching studentId).
 
-        Columns ID,Username,Full Name,edX email,External email are otherwise
-        disregarded.  All other columns are taken as assignments.
+        These columns are disregarded: ID, Username, Full Name, edX email,
+        External email.
+        All other columns are taken as assignments.
 
         If email_field is specified, then that field name is taken as
         the student's email.
@@ -535,6 +602,8 @@ class GradeBook(Base):
             csv_reader (str): filename of csv data, or readable file object
             email_field (str): student's email
 
+        Returns:
+            json
         """
         non_assignment_fields = [
             'ID', 'Username', 'Full Name', 'edX email', 'External email'

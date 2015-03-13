@@ -14,17 +14,14 @@ try:
     DIST = get_distribution('pylmod')
     # Normalize case for Windows systems
     DIST_LOC = os.path.normcase(DIST.location)
-    print('distribution location is <%s>' % DIST_LOC)  # debug
     HERE = os.path.normcase(__file__)
-    print('HERE is <%s>' % HERE)  # debug
-    print('DIST.version is <%s>' % DIST.version)  # debug
     if not HERE.startswith(
             os.path.join(DIST_LOC, 'pylmod')
     ):  # pragma: no cover
         # not installed, but there is another version that *is*
         raise DistributionNotFound
 except DistributionNotFound:  # pragma: no cover
-    __version__ = 'Please install this project with setup.py'
+    __version__ = '0.1.0'  # hard coded value until we can debug RTD defect
 else:
     __version__ = DIST.version
 
