@@ -17,14 +17,19 @@ log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 class GradeBook(Base):
-    """API for functions that return gradebook data from MIT LMod service.
-
+    """
     All calls to the LMod service return JSON for all calls. The JSON always
     contains
-    "status" (1=successful, -1=failed),
-    "message" (details about any error condition, or success message),
-    and the data being returned if applicable.
-    i.e. {"status":1,"message":"","data":{...}}
+
+    - "status" (1=successful, -1=failed),
+    - "message" (details about any error condition, or success message),
+    - the returned data, if applicable.
+
+    for example,
+
+    .. code-block:: json
+
+        {"status":1,"message":"","data":{...}}
 
     API reference at
     https://learning-modules-test.mit.edu/service/gradebook/doc.html
