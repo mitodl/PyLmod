@@ -8,21 +8,25 @@ from pylmod.client import Client
 from pylmod.gradebook import GradeBook
 from pylmod.membership import Membership
 
-# pylint: disable=no-member
-try:
-    DIST = get_distribution('pylmod')
-    # Normalize case for Windows systems
-    DIST_LOC = os.path.normcase(DIST.location)
-    HERE = os.path.normcase(__file__)
-    if not HERE.startswith(
-            os.path.join(DIST_LOC, 'pylmod')
-    ):  # pragma: no cover
-        # not installed, but there is another version that *is*
-        raise DistributionNotFound
-except DistributionNotFound:  # pragma: no cover
-    __version__ = 'Please install this project with setup.py'
-else:
-    __version__ = DIST.version
 
+def _get_version():
+    """Grab version from pkg_resources"""
+    # pylint: disable=no-member
+    try:
+        dist = get_distribution(__project__)
+        # Normalize case for Windows systems
+        dist_loc = os.path.normcase(dist.location)
+        here = os.path.normcase(os.path.abspath(__file__))
+        if not here.startswith(
+                os.path.join(dist_loc, __project__)
+        ):
+            # not installed, but there is another version that *is*
+            raise DistributionNotFound
+    except DistributionNotFound:
+        return 'Please install this project with setup.py'
+    else:
+        return dist.version
 
 __all__ = ['Client', 'GradeBook', 'Membership']
+__project__ = 'pylmod'
+__version__ = _get_version()
