@@ -18,12 +18,14 @@ log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 class GradeBook(Base):
     """
-    All calls to the LMod service return JSON for all calls. The JSON
-    always contains these items:
+    The MIT Learning Modules web service (LMod) always returns data.
+    Gradebook API calls return this data as a Python data structure,
+    either a list or a dictionary. The data structure will contain
+    these items:
 
     - "status" (1=successful, -1=failed),
     - "message" (details about any error condition, or success message),
-    - the returned data, if applicable.
+    - the returned data in a list or dictionary, if applicable.
 
     and is in this format:
 
@@ -46,7 +48,7 @@ class GradeBook(Base):
             self.gradebook_id = self.get_gradebook_id(gbuuid)
 
     def get_gradebook_id(self, gbuuid):
-        """return gradebookid for a given gradebook uuid.
+        """Return gradebookid for a given gradebook uuid.
 
         Args:
             gbuuid (str): gradebook uuid, i.e. STELLAR:/project/gbngtest
@@ -77,12 +79,13 @@ class GradeBook(Base):
             avg_stats=False,
             grading_stats=False
     ):
-        """get assignments for a gradebook
+        """Get assignments for a gradebook.
 
-        return list of assignments for a given gradebook,
-        specified by a gradebook id.  You can control if additional
-        parameters are returned, but the response time with avg_stats
-        and grading_stats enabled is significantly longer.
+        Return list of assignments for a given gradebook,
+        specified by a py:attribute::gradebook_id.  You can control
+        if additional parameters are returned, but the response
+        time with py:attribute::avg_stats and py:attribute::grading_stats
+        enabled is significantly longer.
 
         Args:
             gradebook_id (str): unique identifier for gradebook, i.e. `2314`
@@ -100,9 +103,8 @@ class GradeBook(Base):
             requests.RequestException
             ValueError
 
-
         Returns:
-            json
+            list of assignments
        """
         # These are parameters required for the remote API call, so
         # there aren't too many arguments
@@ -125,9 +127,9 @@ class GradeBook(Base):
         return assignments['data']
 
     def get_assignment_by_name(self, assignment_name, assignments=None):
-        """get assignment by name
+        """Get assignment by name.
 
-        returns assignment ID value (numerical)
+        Returns assignment ID value (numerical)
         and assignment dict.
 
         Args:
@@ -139,7 +141,7 @@ class GradeBook(Base):
             ValueError
 
         Returns:
-            json
+            dictionary
 
         """
         if assignments is None:
@@ -159,9 +161,9 @@ class GradeBook(Base):
             gradebook_id='',
             **kwargs
     ):
-        """create a new assignment
+        """Create a new assignment.
 
-        create a new assignment. By default, assignments are are created
+        Create a new assignment. By default, assignments are are created
         under the `Uncategorized` category.
 
         Args:
@@ -203,9 +205,9 @@ class GradeBook(Base):
         return response
 
     def delete_assignment(self, assignment_id):
-        """ delete assignment
+        """Delete assignment.
 
-        delete assignment specified by assignment Id
+        Delete assignment specified by assignment Id.
 
         Args:
             assignment_id (str): id of assignment to delete
@@ -290,10 +292,10 @@ class GradeBook(Base):
         )
 
     def multi_grade(self, grade_array, gradebook_id=''):
-        """set multiple grades for students
+        """Set multiple grades for students.
 
-        set multiple student grades for a gradebook.  The grades are passed
-        as an array of dictionaries, of student_id and assignment_id  of
+        Set multiple student grades for a gradebook.  The grades are passed
+        as an array of dictionaries, of student_id and assignment_id of
         expecting json representation of an array of grades to save.
         Both studentId and assignmentId are required; to set an overall grade,
         pass the root assignment id, which can be gotten either by calling
@@ -327,9 +329,9 @@ class GradeBook(Base):
         )
 
     def get_sections(self, gradebook_id='', simple=False):
-        """get the sections for a gradebook
+        """Get the sections for a gradebook.
 
-        get a list of sections for a given gradebook,
+        Get a list of sections for a given gradebook,
         specified by a gradebookid.
 
         Args:
@@ -338,7 +340,7 @@ class GradeBook(Base):
 
         An example return value is:
 
-        .. code-block:: json
+        .. code-block:: python
 
             [{
                 "name": "Unassigned",
@@ -347,14 +349,14 @@ class GradeBook(Base):
                 "shortName": "def",
                 "staffs": null,
                 "groupId": 1293925
-            }]
+            },]
 
         Raises:
             requests.RequestException
             ValueError
 
         Returns:
-            json
+            list of dictionaries containing section data
         """
         params = dict(includeMembers='false')
 
@@ -370,7 +372,7 @@ class GradeBook(Base):
         return section_data['data']
 
     def get_section_by_name(self, section_name):
-        """return section for a given section name
+        """Get section for a given section name.
 
         Args:
             section_name (str): section name
@@ -398,9 +400,9 @@ class GradeBook(Base):
             include_grade_history=False,
             include_makeup_grades=False
     ):
-        """get students for a gradebook
+        """Get students for a gradebook.
 
-        get a list of students for a given gradebook,
+        Get a list of students for a given gradebook,
         specified by a gradebookid.
 
         Args:
@@ -500,7 +502,7 @@ class GradeBook(Base):
         return student_data['data']
 
     def get_student_by_email(self, email, students=None):
-        """get a student based on email address.
+        """Get a student based on email address.
 
         Calls self.get_students() to get list of all students, if not passed
         as the students argument.  Returns studentid, student dict, if found.
@@ -528,9 +530,9 @@ class GradeBook(Base):
     def _spreadsheet2gradebook_multi(
             self, csv_reader, email_field, non_assignment_fields
     ):
-        """transfer grades from spreadsheet to array
+        """Transfer grades from spreadsheet to array.
 
-        Helper function: Transfer grades from spreadsheet using
+        Helper function that transfer grades from spreadsheet using
         multiGrades (multiple students at a time). We do this by
         creating a large array containing all grades to transfer, then
         make one call to the Gradebook API.
@@ -632,7 +634,7 @@ class GradeBook(Base):
     def spreadsheet2gradebook(
             self, csv_file, email_field=None,
     ):
-        """upload grade spreadsheet to gradebook
+        """Upload grade spreadsheet to gradebook.
 
         Upload grades from CSV format spreadsheet file into the
         Learning Modules gradebook.  The spreadsheet should have a column
