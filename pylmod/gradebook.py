@@ -18,8 +18,8 @@ log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 class GradeBook(Base):
     """
-    All calls to the LMod service return JSON for all calls. The JSON always
-    contains
+    All calls to the LMod service return JSON for all calls. The JSON
+    always contains these items:
 
     - "status" (1=successful, -1=failed),
     - "message" (details about any error condition, or success message),
@@ -185,6 +185,12 @@ class GradeBook(Base):
                 dictionary containing additional parameters,
                 i.e. totalAverage, graderVisible, and categoryId
 
+        Raises:
+            requests.RequestException
+            ValueError
+
+        Returns:
+            json
         """
         data = {
             'name': name,
