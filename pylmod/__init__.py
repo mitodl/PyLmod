@@ -21,7 +21,7 @@ try:
         # not installed, but there is another version that *is*
         raise DistributionNotFound
 except DistributionNotFound:  # pragma: no cover
-    __version__ = '0.1.0'  # hard coded value until we can debug RTD defect
+    __version__ = 'Please install this project with setup.py'
 else:
     __version__ = DIST.version
 
