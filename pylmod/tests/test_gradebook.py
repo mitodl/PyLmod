@@ -147,11 +147,13 @@ class TestGradebook(BaseTest):
                 u"gradebookName": u"Gradebook for testingstuff"
             }
         }
+        print('{0}gradebook'.format(self.GRADEBOOK_REGISTER_BASE))
+
         if not send_data:
             del body['data']
         httpretty.register_uri(
             httpretty.GET,
-            '{0}gradebook'.format(self.URLBASE),
+            '{0}gradebook'.format(self.GRADEBOOK_REGISTER_BASE),
             body=json.dumps(body)
         )
 
@@ -159,7 +161,10 @@ class TestGradebook(BaseTest):
         """Respond to assignment list requests"""
         httpretty.register_uri(
             httpretty.GET,
-            '{0}assignments/{1}'.format(self.URLBASE, self.GRADEBOOK_ID),
+            '{0}assignments/{1}'.format(
+                self.GRADEBOOK_REGISTER_BASE,
+                self.GRADEBOOK_ID
+            ),
             body=json.dumps(self.ASSIGNMENT_BODY)
         )
 
@@ -167,7 +172,7 @@ class TestGradebook(BaseTest):
         """Handle assignment creation as needed"""
         httpretty.register_uri(
             httpretty.POST,
-            '{0}assignment'.format(self.URLBASE),
+            '{0}assignment'.format(self.GRADEBOOK_REGISTER_BASE),
             body=json.dumps(body)
         )
 
@@ -175,7 +180,9 @@ class TestGradebook(BaseTest):
         """Handle multigrade API call"""
         httpretty.register_uri(
             httpretty.POST,
-            '{0}multiGrades/{1}'.format(self.URLBASE, self.GRADEBOOK_ID),
+            '{0}multiGrades/{1}'.format(
+                self.GRADEBOOK_REGISTER_BASE, self.GRADEBOOK_ID
+            ),
             body=json.dumps(body)
         )
 
@@ -183,7 +190,10 @@ class TestGradebook(BaseTest):
         """Handle section getting API call"""
         httpretty.register_uri(
             httpretty.GET,
-            '{0}sections/{1}'.format(self.URLBASE, self.GRADEBOOK_ID),
+            '{0}sections/{1}'.format(
+                self.GRADEBOOK_REGISTER_BASE,
+                self.GRADEBOOK_ID
+            ),
             body=json.dumps(self.SECTION_BODY)
         )
 
@@ -191,7 +201,10 @@ class TestGradebook(BaseTest):
         """Handle student getting API call"""
         httpretty.register_uri(
             httpretty.GET,
-            '{0}students/{1}'.format(self.URLBASE, self.GRADEBOOK_ID),
+            '{0}students/{1}'.format(
+                self.GRADEBOOK_REGISTER_BASE,
+                self.GRADEBOOK_ID
+            ),
             body=json.dumps(self.STUDENT_BODY)
         )
 
@@ -204,7 +217,7 @@ class TestGradebook(BaseTest):
         httpretty.register_uri(
             httpretty.GET,
             '{0}students/{1}/section/{2}'.format(
-                self.URLBASE,
+                self.GRADEBOOK_REGISTER_BASE,
                 self.GRADEBOOK_ID,
                 section,
             ),
@@ -218,7 +231,10 @@ class TestGradebook(BaseTest):
         # Strip off base URL to make sure it comes back
         urlbase = self.URLBASE[:-1]
         test_base = GradeBook(self.CERT, urlbase)
-        self.assertEqual(test_base.urlbase, self.URLBASE)
+        self.assertEqual(
+            test_base.urlbase,
+            self.URLBASE + 'service/gradebook/'
+        )
         self.assertEqual(test_base._session.cert, self.CERT)
         self.assertIsNone(test_base.gradebookid)
 
@@ -353,7 +369,7 @@ class TestGradebook(BaseTest):
         response_data = {'message': 'success'}
         httpretty.register_uri(
             httpretty.DELETE,
-            '{0}assignment/1'.format(self.URLBASE),
+            '{0}assignment/1'.format(self.GRADEBOOK_REGISTER_BASE),
             body=json.dumps(response_data)
         )
         self._register_get_gradebook()
@@ -369,7 +385,10 @@ class TestGradebook(BaseTest):
         response_data = {'message': 'success'}
         httpretty.register_uri(
             httpretty.POST,
-            '{0}grades/{1}'.format(self.URLBASE, self.GRADEBOOK_ID),
+            '{0}grades/{1}'.format(
+                self.GRADEBOOK_REGISTER_BASE,
+                self.GRADEBOOK_ID
+            ),
             body=json.dumps(response_data)
         )
         self._register_get_gradebook()

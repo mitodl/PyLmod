@@ -26,10 +26,12 @@ class GradeBook(Base):
     def __init__(
             self,
             cert,
-            urlbase='https://learning-modules.mit.edu:8443/service/gradebook',
+            urlbase='https://learning-modules.mit.edu:8443/',
             gbuuid=None
     ):
         super(GradeBook, self).__init__(cert, urlbase)
+        # Add service base
+        self.urlbase += 'service/gradebook/'
         if gbuuid is not None:
             self.gradebook_id = self.get_gradebook_id(gbuuid)
 

@@ -28,7 +28,7 @@ class TestModule(unittest.TestCase):
         """
         import pylmod
         self.assertEqual(
-            ['Client', 'GradeBook', 'Membership'],
+            ['GradeBook', 'Membership'],
             pylmod.__all__
         )
 
