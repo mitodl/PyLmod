@@ -51,6 +51,11 @@ class GradeBook(Base):
         Args:
             gbuuid (str): gradebook uuid, i.e. STELLAR:/project/gbngtest
 
+        Raises:
+            PyLmodUnexpectedData
+            requests.RequestException
+            ValueError
+
         Returns:
             json
         """
@@ -91,6 +96,11 @@ class GradeBook(Base):
                 return grading statistics, i.e. number of approved grades,
                 unapproved grades, etc., default=`False`
 
+        Raises:
+            requests.RequestException
+            ValueError
+
+
         Returns:
             json
        """
@@ -123,6 +133,10 @@ class GradeBook(Base):
         Args:
             assignment_name (str): name of assignment
             assignments (dict): assignments
+
+        Raises:
+            requests.RequestException
+            ValueError
 
         Returns:
             json
@@ -165,6 +179,10 @@ class GradeBook(Base):
                 dictionary containing additional parameters,
                 i.e. totalAverage, graderVisible, and categoryId
 
+        Raises:
+            requests.RequestException
+            ValueError
+
         Returns:
             json
         """
@@ -191,6 +209,10 @@ class GradeBook(Base):
 
         Args:
             assignment_id (str): id of assignment to delete
+
+        Raises:
+            requests.RequestException
+            ValueError
 
         Returns:
             json
@@ -235,6 +257,10 @@ class GradeBook(Base):
             grade_value (str): numerical grade value
             gradebook_id (str): numerical ID for gradebook (optional)
             kwargs (dict):
+
+        Raises:
+            requests.RequestException
+            ValueError
 
         Returns:
             json
@@ -284,7 +310,11 @@ class GradeBook(Base):
 
         Args:
             grade_array (dict): an array of grades to save
-            gradebook_id (str): id of gradebook to
+            gradebook_id (str): id of gradebook
+
+        Raises:
+            requests.RequestException
+            ValueError
 
         Returns:
             json
@@ -319,6 +349,10 @@ class GradeBook(Base):
                 "groupId": 1293925
             }]
 
+        Raises:
+            requests.RequestException
+            ValueError
+
         Returns:
             json
         """
@@ -340,6 +374,10 @@ class GradeBook(Base):
 
         Args:
             section_name (str): section name
+
+        Raises:
+            requests.RequestException
+            ValueError
 
         Returns:
             json
@@ -378,6 +416,10 @@ class GradeBook(Base):
                 include student's grade history, default=`False`
             include_makeup_grades (bool):
                 include student's makeup grades, default=`False`
+
+        Raises:
+            requests.RequestException
+            ValueError
 
         Returns:
             json
@@ -467,6 +509,10 @@ class GradeBook(Base):
             email (str):
             students (dict):
 
+        Raises:
+            requests.RequestException
+            ValueError
+
         Returns:
             json
         """
@@ -493,6 +539,11 @@ class GradeBook(Base):
             csv_reader:
             email_field:
             non_assignment_fields:
+
+        Raises:
+            PyLmodFailedAssignmentCreation
+            requests.RequestException
+            ValueError
 
         Returns:
             json
@@ -601,6 +652,11 @@ class GradeBook(Base):
         Args:
             csv_reader (str): filename of csv data, or readable file object
             email_field (str): student's email
+
+        Raises:
+            PyLmodFailedAssignmentCreation
+            requests.RequestException
+            ValueError
 
         Returns:
             json

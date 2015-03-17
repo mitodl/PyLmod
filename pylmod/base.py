@@ -13,15 +13,18 @@ log = logging.getLogger(__name__)  # pylint: disable=C0103
 
 class Base(object):
     """
-    The Base class provides the transport for accessing MIT LMod web service.
+    Base provides the transport for accessing the MIT Learning Modules (LMod)
 
     The Base class implements the functions that underlie the HTTP calls to
-    the LMod web service.  It shouldn't be instantiated directly as it is
-    inherited by the classes that implement the API.
+    the MIT Learning Modules (LMod) web service.  It shouldn't be
+    instantiated directly as it is inherited by the classes that
+    implement the API.
 
     Attributes:
-        cert: The certificate used to authenticate access to LMod web service
-        urlbase: The URL of the LMod web service
+        cert (unicode):
+            file path to the certificate used to authenticate access
+            to LMod web service
+        urlbase (str): The URL of the LMod web service
     """
     GBUUID = 'STELLAR:/project/mitxdemosite'
     TIMEOUT = 200  # connection timeout, seconds
@@ -38,8 +41,10 @@ class Base(object):
         """initialize Base instance
 
         Args:
-            cert:
-            urlbase:    URL base for gradebook API
+        cert (unicode):
+            file path to the certificate used to authenticate access
+            to LMod web service
+        urlbase (str): URL base for gradebook API
 
          """
         # pem with private and public key application certificate for access
@@ -63,7 +68,7 @@ class Base(object):
         """Convert to json if it isn't already a string
 
         Args:
-            data:
+            data (str): data to convert to json
         """
         if type(data) not in [str, unicode]:
             data = json.dumps(data)
@@ -88,8 +93,13 @@ class Base(object):
         """Routine to do low-level REST operation, with retry
 
         Args:
-            func (str):
-            url (str):
+            func (callable): API function to call
+            url (str): service URL endpoint
+            kwargs (dict): addition parameters
+
+        Raises:
+            requests.RequestException
+            ValueError
 
         """
         try:
@@ -111,8 +121,8 @@ class Base(object):
         """generic GET operation for retrieving data from Learning Modules API
 
         Args:
-            service:
-            params:
+            service (str): The endpoint service to use, i.e. gradebook
+            params :
 
         Example:
           gbk.get('students/{gradebookId}', params=params, gradebookId=gbid)

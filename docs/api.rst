@@ -7,7 +7,7 @@ API docs.
 Library
 =======
 
-API documentation.
+API documentation
 
 .. automodule:: pylmod
     :members:
