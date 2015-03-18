@@ -23,15 +23,15 @@ class GradeBook(Base):
     either a list or a dictionary. The data structure will contain
     these items:
 
-    - "status" (1=successful, -1=failed),
-    - "message" (details about any error condition, or success message),
-    - the returned data in a list or dictionary, if applicable.
+    - ``status`` - ``1`` = successful, ``-1`` = failed
+    - ``message`` - details about any error condition, or success message
+    - ``data`` - the returned data in a list or dictionary, if applicable
 
     and is in this format:
 
-    .. code-block:: json
+    .. code-block:: python
 
-        {"status":1,"message":"","data":{...}}
+        {u'status':1,u'message':u'',u'data':{...}}
 
     API reference at
     https://learning-modules-test.mit.edu/service/gradebook/doc.html
@@ -59,7 +59,7 @@ class GradeBook(Base):
             ValueError
 
         Returns:
-            json
+            value of gradebook id
         """
         gradebook = self.get('gradebook', params={'uuid': gbuuid})
         if 'data' not in gradebook:
@@ -141,7 +141,7 @@ class GradeBook(Base):
             ValueError
 
         Returns:
-            dictionary
+            dictionary of assignments
 
         """
         if assignments is None:
@@ -186,7 +186,7 @@ class GradeBook(Base):
             ValueError
 
         Returns:
-            json
+            dictionary containing response ``status`` and ``message``
         """
         data = {
             'name': name,
@@ -217,7 +217,7 @@ class GradeBook(Base):
             ValueError
 
         Returns:
-            json
+            dictionary containing response ``status`` and ``message``
         """
         return self.delete(
             'assignment/{assignmentId}'.format(assignmentId=assignment_id),
@@ -265,7 +265,7 @@ class GradeBook(Base):
             ValueError
 
         Returns:
-            json
+            dictionary containing response ``status`` and ``message``
         """
         # pylint: disable=too-many-arguments
 
@@ -319,7 +319,7 @@ class GradeBook(Base):
             ValueError
 
         Returns:
-            json
+            dictionary containing response ``status`` and ``message``
         """
         return self.post(
             'multiGrades/{gradebookId}'.format(
@@ -382,7 +382,7 @@ class GradeBook(Base):
             ValueError
 
         Returns:
-            json
+            tuples of ``groupId`` and section dictionaries
         """
         sections = self.get_sections()
         for section in sections:
@@ -424,11 +424,11 @@ class GradeBook(Base):
             ValueError
 
         Returns:
-            example return list element:
+            list of student dictionaries
 
         .. code-block:: python
 
-            {
+            [{
                 u'accountEmail': u'stellar.test2@gmail.com',
                 u'displayName': u'Molly Parker',
                 u'photoUrl': None,
@@ -444,7 +444,9 @@ class GradeBook(Base):
                 u'givenName': u'Molly',
                 u'nickName': u'Molly',
                 u'email': u'stellar.test2@gmail.com'
-            }
+            },]
+
+
         """
         # These are parameters required for the remote API call, so
         # there aren't too many arguments, or too many variables
@@ -486,11 +488,16 @@ class GradeBook(Base):
             )
 
             def remap(students):
-                """Convert mit.edu domain to upper-case for student emails
+                """Convert mit.edu domain to upper-case for student emails.
+
+                The mit.edu domain for user email must be upper-case,
+                i.e. MIT.EDU.
 
                 Args:
-                    students (dict):
+                    students (list): list of students
 
+                Returns:
+                    dictionary with updated student email domains
                 """
                 newx = dict((student_map[k], students[k]) for k in student_map)
                 # match certs
@@ -516,7 +523,7 @@ class GradeBook(Base):
             ValueError
 
         Returns:
-            json
+            tuple
         """
         if students is None:
             students = self.get_students()
@@ -538,9 +545,10 @@ class GradeBook(Base):
         make one call to the Gradebook API.
 
         Args:
-            csv_reader:
-            email_field:
-            non_assignment_fields:
+            csv_reader (list): list of rows in CSV file
+            email_field (str):
+            non_assignment_fields (list):
+                list of column names in CSV file that
 
         Raises:
             PyLmodFailedAssignmentCreation
@@ -548,7 +556,9 @@ class GradeBook(Base):
             ValueError
 
         Returns:
-            json
+            tuple of dictionary containing response ``status``
+            and ``message``, and duration of operation
+
         """
         # pylint: disable=too-many-locals
         assignments = self.get_assignments()
@@ -599,7 +609,7 @@ class GradeBook(Base):
                 assignment_id = assignment2id[field]
                 successful = True
                 try:
-                    # Try to convert to numeric, but keep grading the
+                    # Try to convert to numeric, but grade the
                     # rest anyway if any particular grade isn't a number
                     gradeval = float(row[field]) * 1.0
                 except ValueError as err:
@@ -661,7 +671,7 @@ class GradeBook(Base):
             ValueError
 
         Returns:
-            json
+            dictionary containing response ``status`` and ``message``
         """
         non_assignment_fields = [
             'ID', 'Username', 'Full Name', 'edX email', 'External email'
