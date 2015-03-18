@@ -103,6 +103,8 @@ class Base(object):
             requests.RequestException
             ValueError
 
+        Returns:
+            json
         """
         try:
             response = func(url, timeout=self.TIMEOUT, **kwargs)
