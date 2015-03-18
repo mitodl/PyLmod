@@ -20,5 +20,6 @@ class BaseTest(TestCase):
     CERT = os.path.join(DATA_ROOT, 'certs', 'test_cert.pem')
 
     URLBASE = 'https://testingstuff/'
+    GRADEBOOK_REGISTER_BASE = URLBASE + 'service/gradebook/'
 
     GBUUID = 'STELLAR:/project/testingstuff'

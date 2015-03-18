@@ -4,7 +4,6 @@ PyLmod is a module that implements MIT Learning Modules API in Python
 import os.path
 from pkg_resources import get_distribution, DistributionNotFound
 
-from pylmod.client import Client
 from pylmod.gradebook import GradeBook
 from pylmod.membership import Membership
 
@@ -27,6 +26,6 @@ def _get_version():
     else:
         return dist.version
 
-__all__ = ['Client', 'GradeBook', 'Membership']
+__all__ = ['GradeBook', 'Membership']
 __project__ = 'pylmod'
 __version__ = _get_version()

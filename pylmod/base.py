@@ -21,7 +21,8 @@ class Base(object):
 
     Attributes:
         cert: The certificate used to authenticate access to LM web service
-        urlbase: The URL of the LM web service
+        urlbase(unicode): The base URL of the LM web service i.e.
+            http(s)://[username:password@]<host>[:port]/
     """
     GBUUID = 'STELLAR:/project/mitxdemosite'
     TIMEOUT = 200  # connection timeout, seconds
@@ -33,7 +34,7 @@ class Base(object):
     def __init__(
             self,
             cert,
-            urlbase='https://learning-modules.mit.edu:8443/service/gradebook',
+            urlbase='https://learning-modules.mit.edu:8443/',
     ):
         """
         Initialize Base instance.
