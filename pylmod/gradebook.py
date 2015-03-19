@@ -105,7 +105,33 @@ class GradeBook(Base):
             ValueError
 
         Returns:
-            list of assignments
+            list where ``data`` contains a list of assignments
+
+            An example return value is:
+
+            .. code-block:: python
+
+                [{u'status': 1,
+                u'message': u'',
+                u'data': [
+                    {u'isHomework': False,
+                    u'name': u'Homework 1',
+                    u'weight': 1.0,
+                    u'assignmentId': 2431240,
+                    u'maxPointsTotal': None,
+                    u'dueDate': 1372392000000,
+                    u'gradingSchemeId': 2431243,
+                    u'isComposite': False,
+                    u'gradingSchemeType': u'NUMERIC',
+                    u'dueDateString': u'06-28-2013',
+                    u'shortName': u'HW1',
+                    u'userDeleted': False,
+                    u'graderVisible': True,
+                    u'categoryId': 1293820,
+                    u'gradebookId': 1293808,
+                    u'description': u''}
+                ]}]
+
        """
         # These are parameters required for the remote API call, so
         # there aren't too many arguments
@@ -168,8 +194,7 @@ class GradeBook(Base):
         under the `Uncategorized` category.
 
         Args:
-            name (str):
-                descriptive assignment name,
+            name (str): descriptive assignment name,
                 i.e. "new NUMERIC SIMPLE ASSIGNMENT"
             short_name (str): short, one word, name of assignment, i.e. "SAnew"
             weight (str): floating point value for weight, i.e. 1.0
@@ -339,25 +364,26 @@ class GradeBook(Base):
             gradebook_id (str): gradebook id to return sections for.
             simple (bool): return a list of section names only
 
-        An example return value is:
-
-        .. code-block:: python
-
-            [{
-                "name": "Unassigned",
-                "editable": false,
-                "members": null,
-                "shortName": "def",
-                "staffs": null,
-                "groupId": 1293925
-            },]
-
         Raises:
             requests.RequestException
             ValueError
 
         Returns:
             list of dictionaries containing section data
+
+            An example return value is:
+
+            .. code-block:: python
+
+                [{
+                    u'name': u'Unassigned',
+                    u'editable': false,
+                    u'members': null,
+                    u'shortName': 'def',
+                    u'staffs': null,
+                    u'groupId': 1293925
+                },]
+
         """
         params = dict(includeMembers='false')
 
