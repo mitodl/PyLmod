@@ -14,5 +14,6 @@ API documentation
     :undoc-members:
     :show-inheritance:
     :imported-members:
+    :inherited-members:
 
 
