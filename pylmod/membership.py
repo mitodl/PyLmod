@@ -1,5 +1,5 @@
 """
-Membership class
+Contains Membership class
 """
 import logging
 from pylmod.base import Base
