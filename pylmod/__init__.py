@@ -1,7 +1,6 @@
 """
 PyLmod is a module that implements MIT Learning Modules API in Python
 """
-import os.path
 from pkg_resources import get_distribution, DistributionNotFound
 
 from pylmod.gradebook import GradeBook

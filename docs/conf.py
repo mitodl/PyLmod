@@ -14,6 +14,9 @@
 from pylmod import __version__
 import sphinx_bootstrap_theme
 
+print __version__
+
+
 # -- General configuration ------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
