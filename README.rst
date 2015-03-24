@@ -42,7 +42,7 @@ an account on the service and then the proper role(s) in the proper
 group(s). Send your application certificate to learningmod-support@mit.edu
 with a request for access. Inform them what your application will do and
 they will assist in configuring your certificate.
-service. This service, maintained by MIT Information Systems and Technologies
+This service, maintained by MIT Information Systems and Technologies
 (IS&T) exposes an API to MIT systems of record for classes, students, and
 grades. PyLmod was created to support MIT's
 use of OpenedX for residential courses, but the library is open source
