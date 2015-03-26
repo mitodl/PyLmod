@@ -574,6 +574,55 @@ class TestGradebook(BaseTest):
                  u'studentId': None},
             ])
         )
+        # Verify that we got the same grades, setting auto-approve = False
+        gradebook._spreadsheet2gradebook_multi(
+            csv_reader=spreadsheet,
+            email_field='External email',
+            non_assignment_fields=['External email'],
+            approve_grades=False
+        )
+        # Verify that we got the grades we expect
+        last_request = httpretty.last_request()
+        self.assertEqual(
+            last_request.body,
+            json.dumps([
+                {u'assignmentId': 1,
+                 u'isGradeApproved': False,
+                 u'mode': 2,
+                 u'numericGradeValue': 2.2,
+                 u'studentId': 1},
+                {u'assignmentId': 1,
+                 u'isGradeApproved': False,
+                 u'mode': 2,
+                 u'numericGradeValue': 1.1,
+                 u'studentId': None},
+            ])
+        )
+
+        # Verify that we got the same grades, setting auto-approve = True
+        gradebook._spreadsheet2gradebook_multi(
+            csv_reader=spreadsheet,
+            email_field='External email',
+            non_assignment_fields=['External email'],
+            approve_grades=True
+        )
+        # Verify that we got the grades we expect
+        last_request = httpretty.last_request()
+        self.assertEqual(
+            last_request.body,
+            json.dumps([
+                {u'assignmentId': 1,
+                 u'isGradeApproved': True,
+                 u'mode': 2,
+                 u'numericGradeValue': 2.2,
+                 u'studentId': 1},
+                {u'assignmentId': 1,
+                 u'isGradeApproved': True,
+                 u'mode': 2,
+                 u'numericGradeValue': 1.1,
+                 u'studentId': None},
+            ])
+        )
 
         # Now run it when the assignment doesn't exist to exercise
         # assignment creation code.
@@ -645,6 +694,24 @@ class TestGradebook(BaseTest):
         # Test with tmp file handle
         with tempfile.NamedTemporaryFile(delete=True) as temp_file:
             gradebook.spreadsheet2gradebook(temp_file.name)
+            called_with = multi_patch.call_args
+            csv_patch.assert_called_once()
+            self.assertEqual(called_with[0][1], email_field)
+            self.assertEqual(called_with[0][2], non_assignment_fields)
+
+        # Test with tmp file handle, approve_grades=False
+        with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+            gradebook.spreadsheet2gradebook(temp_file.name,
+                                            approve_grades=False)
+            called_with = multi_patch.call_args
+            csv_patch.assert_called_once()
+            self.assertEqual(called_with[0][1], email_field)
+            self.assertEqual(called_with[0][2], non_assignment_fields)
+
+        # Test with tmp file handle, approve_grades=True
+        with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+            gradebook.spreadsheet2gradebook(temp_file.name,
+                                            approve_grades=True)
             called_with = multi_patch.call_args
             csv_patch.assert_called_once()
             self.assertEqual(called_with[0][1], email_field)
