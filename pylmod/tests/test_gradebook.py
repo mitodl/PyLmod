@@ -124,6 +124,7 @@ class TestGradebook(BaseTest):
                 'mode': 2,
                 'comment': 'from MITx {0}'.format(time.ctime(time.time())),
                 'numericGradeValue': '1.1',
+                'isGradeApproved': False
             },
             {
                 'studentId': 2,
@@ -131,7 +132,34 @@ class TestGradebook(BaseTest):
                 'mode': 2,
                 'comment': 'from MITx {0}'.format(time.ctime(time.time())),
                 'numericGradeValue': '5.1',
+                'isGradeApproved': False
             },
+        ]
+
+    def _get_multigrade(self, approve_grades=False):
+        """Get a list of spreadsheet rows as dictionaries
+
+        Get a list of spreadsheet row values to test submitting
+        grades in a spreadsheet to the LMod web service.
+
+        Args:
+            approve_grades (boolean): list of spreadsheet rows as
+                dictionaries
+
+        Returns: list - list of spreadsheet rows
+
+        """
+        return [
+                {'assignmentId': 1,
+                 'isGradeApproved': approve_grades,
+                 'mode': 2,
+                 'numericGradeValue': 2.2,
+                 'studentId': 1},
+                {'assignmentId': 1,
+                 'isGradeApproved': approve_grades,
+                 'mode': 2,
+                 'numericGradeValue': 1.1,
+                 'studentId': None},
         ]
 
     def _register_get_gradebook(self, send_data=True):
@@ -400,7 +428,8 @@ class TestGradebook(BaseTest):
         response = gradebook.set_grade(
             assignment_id=grade['assignmentId'],
             student_id=grade['studentId'],
-            grade_value=grade['numericGradeValue']
+            grade_value=grade['numericGradeValue'],
+            isGradeApproved=False
         )
         self.assertEqual(response_data, response)
         last_request = httpretty.last_request()
@@ -563,31 +592,78 @@ class TestGradebook(BaseTest):
         gradebook._spreadsheet2gradebook_multi(
             csv_reader=spreadsheet,
             email_field='External email',
-            non_assignment_fields=['External email']
+            non_assignment_fields=['External email'],
+            approve_grades=False,
         )
         # Verify that we got the grades we expect
         last_request = httpretty.last_request()
         self.assertEqual(
             last_request.body,
-            json.dumps([
-                {u'assignmentId': 1,
-                 u'isGradeApproved': False,
-                 u'mode': 2,
-                 u'numericGradeValue': 2.2,
-                 u'studentId': 1},
-                {u'assignmentId': 1,
-                 u'isGradeApproved': False,
-                 u'mode': 2,
-                 u'numericGradeValue': 1.1,
-                 u'studentId': None},
-            ])
+            json.dumps(self._get_multigrade(approve_grades=False))
+        )
+        # Verify that we got the same grades, setting auto-approve = False
+        gradebook._spreadsheet2gradebook_multi(
+            csv_reader=spreadsheet,
+            email_field='External email',
+            non_assignment_fields=['External email'],
+            approve_grades=False
+        )
+        # Verify that we got the grades we expect
+        last_request = httpretty.last_request()
+        self.assertEqual(
+            last_request.body,
+            json.dumps(self._get_multigrade(approve_grades=False))
+        )
+        # Verify that we got the same grades, setting auto-approve = False
+        gradebook._spreadsheet2gradebook_multi(
+            csv_reader=spreadsheet,
+            email_field='External email',
+            non_assignment_fields=['External email'],
+            approve_grades=False
+        )
+        # Verify that we got the grades we expect
+        last_request = httpretty.last_request()
+        self.assertEqual(
+            last_request.body,
+            json.dumps(self._get_multigrade(approve_grades=False))
+        )
+
+        # Verify that we got the same grades, setting auto-approve = True
+        gradebook._spreadsheet2gradebook_multi(
+            csv_reader=spreadsheet,
+            email_field='External email',
+            non_assignment_fields=['External email'],
+            approve_grades=True
+        )
+        # Verify that we got the grades we expect
+        last_request = httpretty.last_request()
+        self.assertEqual(
+            last_request.body,
+            json.dumps(self._get_multigrade(approve_grades=True))
+        )
+
+        # Verify that we got the same grades, setting auto-approve = True
+        gradebook._spreadsheet2gradebook_multi(
+            csv_reader=spreadsheet,
+            email_field='External email',
+            non_assignment_fields=['External email'],
+            approve_grades=True
+        )
+        # Verify that we got the grades we expect
+        last_request = httpretty.last_request()
+        self.assertEqual(
+            last_request.body,
+            json.dumps(self._get_multigrade(approve_grades=True))
         )
 
         # Now run it when the assignment doesn't exist to exercise
         # assignment creation code.
 
         # Setup create to return an assignment ID as expected by the API
-        self._register_create_assignment(dict(data=dict(assignmentId=3)))
+        assignment_id = 3
+        self._register_create_assignment(
+            dict(data=dict(assignmentId=assignment_id))
+        )
         spreadsheet = [
             {'External email': 'a@example.com', 'Homework 8': 2.2},
         ]
@@ -597,15 +673,11 @@ class TestGradebook(BaseTest):
             non_assignment_fields=['External email']
         )
         last_request = httpretty.last_request()
+        expected_response = self._get_multigrade(approve_grades=False)[0]
+        expected_response['assignmentId'] = assignment_id
         self.assertEqual(
             last_request.body,
-            json.dumps([
-                {u'assignmentId': 3,
-                 u'isGradeApproved': False,
-                 u'mode': 2,
-                 u'numericGradeValue': 2.2,
-                 u'studentId': 1},
-            ])
+            json.dumps([expected_response])
         )
 
         # Now with assignment failing to be created
@@ -614,7 +686,8 @@ class TestGradebook(BaseTest):
             gradebook._spreadsheet2gradebook_multi(
                 csv_reader=spreadsheet,
                 email_field='External email',
-                non_assignment_fields=['External email']
+                non_assignment_fields=['External email'],
+                approve_grades=False,
             )
 
         # And finally with a bad grade
@@ -625,7 +698,8 @@ class TestGradebook(BaseTest):
         gradebook._spreadsheet2gradebook_multi(
             csv_reader=spreadsheet,
             email_field='External email',
-            non_assignment_fields=['External email']
+            non_assignment_fields=['External email'],
+            approve_grades=False
         )
         last_request = httpretty.last_request()
         self.assertEqual(
@@ -653,6 +727,24 @@ class TestGradebook(BaseTest):
         # Test with tmp file handle
         with tempfile.NamedTemporaryFile(delete=True) as temp_file:
             gradebook.spreadsheet2gradebook(temp_file.name)
+            called_with = multi_patch.call_args
+            csv_patch.assert_called_once()
+            self.assertEqual(called_with[0][1], email_field)
+            self.assertEqual(called_with[0][2], non_assignment_fields)
+
+        # Test with tmp file handle, approve_grades=False
+        with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+            gradebook.spreadsheet2gradebook(temp_file.name,
+                                            approve_grades=False)
+            called_with = multi_patch.call_args
+            csv_patch.assert_called_once()
+            self.assertEqual(called_with[0][1], email_field)
+            self.assertEqual(called_with[0][2], non_assignment_fields)
+
+        # Test with tmp file handle, approve_grades=True
+        with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+            gradebook.spreadsheet2gradebook(temp_file.name,
+                                            approve_grades=True)
             called_with = multi_patch.call_args
             csv_patch.assert_called_once()
             self.assertEqual(called_with[0][1], email_field)
