@@ -1,5 +1,22 @@
 PyLmod
 ======
+.. image:: https://img.shields.io/travis/mitodl/PyLmod.svg
+    :target: https://travis-ci.org/mitodl/PyLmod
+.. image:: https://img.shields.io/coveralls/mitodl/PyLmod.svg
+    :target: https://coveralls.io/r/mitodl/PyLmod
+.. image:: https://img.shields.io/pypi/dm/pylmod.svg
+    :target: https://pypi.python.org/pypi/pylmod
+.. image:: https://img.shields.io/pypi/v/pylmod.svg
+    :target: https://pypi.python.org/pypi/pylmod
+.. image:: https://img.shields.io/github/issues/mitodl/PyLmod.svg
+    :target: https://github.com/mitodl/PyLmod/issues
+.. image:: https://img.shields.io/badge/license-BSD-blue.svg
+    :target: https://github.com/mitodl/PyLmod/blob/master/LICENSE
+.. image:: https://readthedocs.org/projects/pylmod/badge/?version=master
+    :target: http://pylmod.rtfd.org/en/master
+.. image:: https://readthedocs.org/projects/pylmod/badge/?version=release
+    :target: http://pylmod.rtfd.org/en/release
+
 :PyLmod: Python implementation of MIT Learning Modules API
 :Version: 0.1.0
 :Author: MIT Office of Digital Learning
