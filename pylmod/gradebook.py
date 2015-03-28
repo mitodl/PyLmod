@@ -136,6 +136,7 @@ class GradeBook(Base):
             student_id,
             grade_value,
             gradebook_id='',
+            approve_grades=False,
             **kwargs
     ):
         """
@@ -155,7 +156,8 @@ class GradeBook(Base):
             'assignmentId': assignment_id,
             'mode': 2,
             'comment': 'from MITx {0}'.format(time.ctime(time.time())),
-            'numericGradeValue': str(grade_value)
+            'numericGradeValue': str(grade_value),
+            'isGradeApproved': approve_grades
         }
         grade_info.update(kwargs)
         log.info(

@@ -109,7 +109,7 @@ class TestGradebook(BaseTest):
     }
 
     @staticmethod
-    def _get_grades():
+    def _get_grades(approve_grades=False):
         """Return a dictionary list of grades.
 
         Since it has a dynamic time value these need to be generated
@@ -122,6 +122,7 @@ class TestGradebook(BaseTest):
                 'mode': 2,
                 'comment': 'from MITx {0}'.format(time.ctime(time.time())),
                 'numericGradeValue': '1.1',
+                'isGradeApproved': approve_grades,
             },
             {
                 'studentId': 2,
@@ -129,6 +130,7 @@ class TestGradebook(BaseTest):
                 'mode': 2,
                 'comment': 'from MITx {0}'.format(time.ctime(time.time())),
                 'numericGradeValue': '5.1',
+                'isGradeApproved': approve_grades,
             },
         ]
 
@@ -394,11 +396,26 @@ class TestGradebook(BaseTest):
         self._register_get_gradebook()
 
         gradebook = GradeBook(self.CERT, self.URLBASE, self.GBUUID)
-        grade = self._get_grades()[0]
+        grade = self._get_grades(approve_grades=False)[0]
         response = gradebook.set_grade(
             assignment_id=grade['assignmentId'],
             student_id=grade['studentId'],
-            grade_value=grade['numericGradeValue']
+            grade_value=grade['numericGradeValue'],
+            approve_grades=grade['isGradeApproved']
+        )
+        self.assertEqual(response_data, response)
+        last_request = httpretty.last_request()
+        self.assertEqual(
+            last_request.body,
+            json.dumps(grade)
+        )
+        # test when grades are approved
+        grade = self._get_grades(approve_grades=True)[0]
+        response = gradebook.set_grade(
+            assignment_id=grade['assignmentId'],
+            student_id=grade['studentId'],
+            grade_value=grade['numericGradeValue'],
+            approve_grades=grade['isGradeApproved']
         )
         self.assertEqual(response_data, response)
         last_request = httpretty.last_request()
@@ -596,6 +613,55 @@ class TestGradebook(BaseTest):
                  u'studentId': 1},
                 {u'assignmentId': 1,
                  u'isGradeApproved': False,
+                 u'mode': 2,
+                 u'numericGradeValue': 1.1,
+                 u'studentId': None},
+            ])
+        )
+        # Verify that we got the same grades, setting auto-approve = False
+        gradebook._spreadsheet2gradebook_multi(
+            csv_reader=spreadsheet,
+            email_field='External email',
+            non_assignment_fields=['External email'],
+            approve_grades=False
+        )
+        # Verify that we got the grades we expect
+        last_request = httpretty.last_request()
+        self.assertEqual(
+            last_request.body,
+            json.dumps([
+                {u'assignmentId': 1,
+                 u'isGradeApproved': False,
+                 u'mode': 2,
+                 u'numericGradeValue': 2.2,
+                 u'studentId': 1},
+                {u'assignmentId': 1,
+                 u'isGradeApproved': False,
+                 u'mode': 2,
+                 u'numericGradeValue': 1.1,
+                 u'studentId': None},
+            ])
+        )
+
+        # Verify that we got the same grades, setting auto-approve = True
+        gradebook._spreadsheet2gradebook_multi(
+            csv_reader=spreadsheet,
+            email_field='External email',
+            non_assignment_fields=['External email'],
+            approve_grades=True
+        )
+        # Verify that we got the grades we expect
+        last_request = httpretty.last_request()
+        self.assertEqual(
+            last_request.body,
+            json.dumps([
+                {u'assignmentId': 1,
+                 u'isGradeApproved': True,
+                 u'mode': 2,
+                 u'numericGradeValue': 2.2,
+                 u'studentId': 1},
+                {u'assignmentId': 1,
+                 u'isGradeApproved': True,
                  u'mode': 2,
                  u'numericGradeValue': 1.1,
                  u'studentId': None},
