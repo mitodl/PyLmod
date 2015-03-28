@@ -42,7 +42,7 @@ class GradeBook(Base):
         }
 
     API reference at
-    https://learning-modules-test.mit.edu/service/gradebook/doc.html
+    https://learning-modules-dev.mit.edu/service/gradebook/doc.html
     """
 
     def __init__(
