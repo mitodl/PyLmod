@@ -12,7 +12,7 @@ class Membership(Base):  # pylint: disable=too-few-public-methods
     MIT Learning Modules service.
 
     API reference at
-    https://learning-modules-test.mit.edu/service/membership/doc.html
+    https://learning-modules-dev.mit.edu/service/membership/doc.html
     """
     def __init__(
             self,

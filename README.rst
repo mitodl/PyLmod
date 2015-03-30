@@ -38,10 +38,10 @@ at these links.
 MIT Learning Modules web service documentation:
 
     `Gradebook module doc
-    <https://learning-modules-test.mit.edu/service/gradebook/doc.html>`_
+    <https://learning-modules-dev.mit.edu/service/gradebook/doc.html>`_
 
     `Membership module doc
-    <https://learning-modules-test.mit.edu/service/membership/doc.html>`_
+    <https://learning-modules-dev.mit.edu/service/membership/doc.html>`_
 
 Getting Started
 ===============
