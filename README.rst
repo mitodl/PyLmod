@@ -23,6 +23,8 @@ PyLmod
 :Homepage: http://engineering.odl.mit.edu
 :License: BSD
 
+new line to delete
+
 PyLmod provides a Python library to access the MIT Learning Modules web
 service (described below). PyLmod was created to support
 MIT's use of OpenedX for residential courses, but the library is open
