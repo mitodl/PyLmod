@@ -68,24 +68,26 @@ class TestGradebook(BaseTest):
 
     SECTION_BODY = {
         'data':
-        [
-            {
-                "name": "Unassigned",
-                "editable": False,
-                "members": None,
-                "shortName": "def",
-                "staffs": None,
-                "groupId": 1293925
-            },
-            {
-                "name": "Section 1",
-                "editable": False,
-                "members": None,
-                "shortName": "def",
-                "staffs": None,
-                "groupId": 123456
-            },
-        ]
+        {
+            'recitation': [
+                {
+                    "name": "Unassigned",
+                    "editable": False,
+                    "members": None,
+                    "shortName": "def",
+                    "staffs": None,
+                    "groupId": 1293925
+                },
+                {
+                    "name": "Section 1",
+                    "editable": False,
+                    "members": None,
+                    "shortName": "def",
+                    "staffs": None,
+                    "groupId": 123456
+                },
+            ]
+        }
     }
 
     STUDENT_BODY = {
@@ -210,7 +212,7 @@ class TestGradebook(BaseTest):
 
     def _register_get_students_in_section(self):
         """Handle student getting API call"""
-        section = self.SECTION_BODY['data'][0]['groupId']
+        section = self.SECTION_BODY['data']['recitation'][0]['groupId']
         students = [x for x in self.STUDENT_BODY['data']
                     if x['sectionId'] == section]
         students_data = dict(data=students)
@@ -436,10 +438,13 @@ class TestGradebook(BaseTest):
 
         # Check simple style
         assignments = gradebook.get_sections(simple=True)
+        expected_sections = gradebook.unravel_sections(
+            self.SECTION_BODY['data']
+        )
         self.assertEqual(
             assignments,
             [{'SectionName': x['name']}
-             for x in self.SECTION_BODY['data']]
+             for x in expected_sections],
         )
 
     @httpretty.activate
@@ -450,7 +455,10 @@ class TestGradebook(BaseTest):
 
         # With match
         self._register_get_sections()
-        section = self.SECTION_BODY['data'][0]
+        section_type = 'recitation'
+        section = self.SECTION_BODY['data'][section_type][0]
+        # Add the type modifier we now add to the structure
+        section['sectionType'] = section_type
         self.assertEqual(
             (section['groupId'], section),
             gradebook.get_section_by_name(section['name'])
@@ -492,7 +500,7 @@ class TestGradebook(BaseTest):
         # With valid section specified
         self._register_get_sections()
         self._register_get_students_in_section()
-        section_name = self.SECTION_BODY['data'][0]['name']
+        section_name = self.SECTION_BODY['data']['recitation'][0]['name']
         students = gradebook.get_students(
             section_name=section_name
         )

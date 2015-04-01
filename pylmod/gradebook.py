@@ -57,6 +57,25 @@ class GradeBook(Base):
         if gbuuid is not None:
             self.gradebook_id = self.get_gradebook_id(gbuuid)
 
+    @staticmethod
+    def unravel_sections(section_data):
+        """Unravels section type dictionary into flat list of sections with
+        type set as an attribute.
+
+        Args:
+            section_data(dict): Data return from py:method::get_sections
+
+        Returns:
+            list: Flat list of sections with ``sectionType`` set to
+                type (i.e. recitation, lecture, etc)
+        """
+        sections = []
+        for type, subsection_list in section_data.items():
+            for section in subsection_list:
+                section['sectionType'] = type
+                sections.append(section)
+        return sections
+
     def get_gradebook_id(self, gbuuid):
         """Return gradebookid for a given gradebook uuid.
 
@@ -511,8 +530,12 @@ class GradeBook(Base):
     def get_sections(self, gradebook_id='', simple=False):
         """Get the sections for a gradebook.
 
-        Get a list of sections for a given gradebook,
-        specified by a gradebookid.
+        Return a dictionary of types of sections containing a list of that
+        type for a given gradebook.  Specified by a gradebookid.
+
+        If simple=True, a list of dictionaries is provided for each
+        section regardless of type. The dictionary only contains one
+        key ``SectionName``.
 
         Args:
             gradebook_id (str): unique identifier for gradebook, i.e. ``2314``
@@ -523,7 +546,8 @@ class GradeBook(Base):
             ValueError: Unable to decode response content
 
         Returns:
-            list: list of dictionaries containing section data
+            dict: Dictionary of section types where each type has a
+                list of sections
 
             An example return value is:
 
@@ -571,7 +595,8 @@ class GradeBook(Base):
         )
 
         if simple:
-            return [{'SectionName': x['name']} for x in section_data['data']]
+            sections = self.unravel_sections(section_data['data'])
+            return [{'SectionName': x['name']} for x in sections]
         return section_data['data']
 
     def get_section_by_name(self, section_name):
@@ -608,7 +633,7 @@ class GradeBook(Base):
                 )
 
         """
-        sections = self.get_sections()
+        sections = self.unravel_sections(self.get_sections())
         for section in sections:
             if section['name'] == section_name:
                 return section['groupId'], section
