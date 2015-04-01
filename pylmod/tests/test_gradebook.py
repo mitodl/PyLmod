@@ -147,7 +147,6 @@ class TestGradebook(BaseTest):
                 u"gradebookName": u"Gradebook for testingstuff"
             }
         }
-        print('{0}gradebook'.format(self.GRADEBOOK_REGISTER_BASE))
 
         if not send_data:
             del body['data']

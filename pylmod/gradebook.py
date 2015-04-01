@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 class GradeBook(Base):
     """
-    Since the MIT Learning Modules web service (LMod) usually returns
+    Since the MIT Learning Modules Web service (LMod) usually returns
     response data,
     GradeBook API calls will return this data as a Python data structure,
     either a list or a dictionary. The data structure will often contain

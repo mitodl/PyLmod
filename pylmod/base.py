@@ -1,5 +1,5 @@
 """
-    Python class representing interface to MIT Learning Modules web service.
+    Python class representing interface to MIT Learning Modules Web service.
 """
 
 import json
@@ -16,19 +16,16 @@ class Base(object):
     Base provides the transport for accessing the MIT Learning Modules (LMod).
 
     The Base class implements the functions that underlie the HTTP calls to
-    the MIT Learning Modules (LMod) web service.  It shouldn't be
+    the MIT Learning Modules (LMod) Web service.  It shouldn't be
     instantiated directly as it is inherited by the classes that
     implement the API.
 
     Attributes:
         cert (unicode): File path to the certificate used to
-            authenticate access to LMod web service
-        urlbase (str): The URL of the LMod web service. i.e.
+            authenticate access to LMod Web service
+        urlbase (str): The URL of the LMod Web service. i.e.
             ``learning-modules.mit.edu`` or ``learning-modules-test.mit.edu``
     """
-    #: The default Stellar site
-    GBUUID = 'STELLAR:/project/mitxdemosite'
-
     #: connection timeout, seconds
     TIMEOUT = 200
 
@@ -47,8 +44,8 @@ class Base(object):
 
         Args:
             cert (unicode): File path to the certificate used to
-                authenticate access to LMod web service
-            urlbase (str): The URL of the LMod web service. i.e.
+                authenticate access to LMod Web service
+            urlbase (str): The URL of the LMod Web service. i.e.
                 ``learning-modules.mit.edu`` or
                 ``learning-modules-test.mit.edu``
          """
