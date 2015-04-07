@@ -435,7 +435,8 @@ class GradeBook(Base):
             'assignmentId': assignment_id,
             'mode': 2,
             'comment': 'from MITx {0}'.format(time.ctime(time.time())),
-            'numericGradeValue': str(grade_value)
+            'numericGradeValue': str(grade_value),
+            'isGradeApproved': False
         }
         grade_info.update(kwargs)
         log.info(
@@ -785,7 +786,11 @@ class GradeBook(Base):
         return None, None
 
     def _spreadsheet2gradebook_multi(
-            self, csv_reader, email_field, non_assignment_fields
+            self,
+            csv_reader,
+            email_field,
+            non_assignment_fields,
+            approve_grades=False
     ):
         """Transfer grades from spreadsheet to array.
 
@@ -874,7 +879,7 @@ class GradeBook(Base):
                         "assignmentId": assignment_id,
                         "numericGradeValue": gradeval,
                         "mode": 2,
-                        "isGradeApproved": False
+                        "isGradeApproved": approve_grades
                     })
         # Everything is setup to post, do the post and track the time
         # it takes.
@@ -892,7 +897,7 @@ class GradeBook(Base):
         return response, duration
 
     def spreadsheet2gradebook(
-            self, csv_file, email_field=None,
+            self, csv_file, email_field=None, approve_grades=False
     ):
         """Upload grade spreadsheet to gradebook.
 
@@ -945,6 +950,6 @@ class GradeBook(Base):
         csv_reader = csv.DictReader(file_pointer, dialect='excel')
 
         response = self._spreadsheet2gradebook_multi(
-            csv_reader, email_field, non_assignment_fields
+            csv_reader, email_field, non_assignment_fields, approve_grades
         )
         return response
