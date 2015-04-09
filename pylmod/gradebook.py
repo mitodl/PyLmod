@@ -60,7 +60,7 @@ class GradeBook(Base):
     @staticmethod
     def unravel_sections(section_data):
         """Unravels section type dictionary into flat list of sections with
-        type set as an attribute.
+        section type set as an attribute.
 
         Args:
             section_data(dict): Data return from py:method::get_sections
@@ -76,6 +76,25 @@ class GradeBook(Base):
                 sections.append(section)
         return sections
 
+    @staticmethod
+    def unravel_staff(staff_data):
+        """Unravels staff role dictionary into flat list of staff
+         members with ``role`` set as an attribute.
+
+        Args:
+            staff_data(dict): Data return from py:method::get_staff
+
+        Returns:
+            list: Flat list of staff members with ``role`` set to
+                role type (i.e. course_admin, instructor, TA, etc)
+        """
+        staff_list = []
+        for role, staff_members in staff_data['data'].items():
+            for member in staff_members:
+                member['role'] = role
+                staff_list.append(member)
+        return staff_list
+
     def get_gradebook_id(self, gbuuid):
         """Return gradebookid for a given gradebook uuid.
 
@@ -86,7 +105,6 @@ class GradeBook(Base):
             PyLmodUnexpectedData: No gradebook id returned
             requests.RequestException: Exception connection error
             ValueError: Unable to decode response content
-
 
         Returns:
             str: value of gradebook id
@@ -100,6 +118,62 @@ class GradeBook(Base):
             log.error(failure_messsage)
             raise PyLmodUnexpectedData(failure_messsage)
         return gradebook['data']['gradebookId']
+
+    def get_options(self, gradebook_id):
+        """Get options for gradebook.
+
+        Get options dictionary for a gradebook.  Options include gradebook
+        attributes.
+
+        Args:
+            gradebook_id (str): unique identifier for gradebook, i.e. ``2314``
+
+        Returns:
+
+            .. code-block:: python
+
+                {
+                    u'data':
+                    {
+                        u'accessLevel': u'class',
+                        u'archived': False,
+                        u'calc_on_approved_only': False,
+                        u'configured': None,
+                        u'courseName': u'',
+                        u'courseNumber': u'mitxdemosite',
+                        u'deriveOverallGrades': False,
+                        u'gradebookEwsEnabled': False,
+                        u'gradebookId': 1293808,
+                        u'gradebookName': u'Gradebook for mitxdemosite',
+                        u'gradebookReadOnly': False,
+                        u'gradebookVisibleToAdvisors': False,
+                        u'graders_change_approved': False,
+                        u'hideExcuseButtonInUI': False,
+                        u'homeworkBetaEnabled': False,
+                        u'membershipQualifier': u'/project/mitxdemosite',
+                        u'membershipSource': u'stellar',
+                        u'student_sees_actual_grades': True,
+                        u'student_sees_category_info': True,
+                        u'student_sees_comments': True,
+                        u'student_sees_cumulative_score': True,
+                        u'student_sees_histograms': True,
+                        u'student_sees_submissions': False,
+                        u'ta_approves': False,
+                        u'ta_change_approved': False,
+                        u'ta_configures': False,
+                        u'ta_edits': False,
+                        u'use_grade_weighting': False,
+                        u'usingAttendance': False,
+                        u'versionCompatible': 4,
+                        u'versionCompatibleString': u'General Availability'
+                    },
+                }
+
+        """
+        end_point = 'gradebook/options/{gradebookId}'.format(
+            gradebookId=gradebook_id or self.gradebook_id)
+        options = self.get(end_point)
+        return options['data']
 
     def get_assignments(
             self,
@@ -948,3 +1022,96 @@ class GradeBook(Base):
             csv_reader, email_field, non_assignment_fields
         )
         return response
+
+    def get_staff(self, gradebook_id, simple=False):
+        """Get staff list for gradebook.
+
+        Get staff list for the gradebook specified. Optionally, return
+        a less detailed list by specifying ``simple = True``.
+
+        If simple=True, return a list of dictionaries, one dictionary
+        for each member. The dictionary contains a member's ``email``,
+        ``displayName``, and ``role``. Members with multiple roles will
+        appear in the list once for each role.
+
+        Args:
+            gradebook_id (str): unique identifier for gradebook, i.e. ``2314``
+            simple (bool): Return a staff list with less detail. Default
+                is ``False``.
+
+        Returns:
+
+            .. code-block:: python
+
+                {
+                    u'data': {
+                        u'COURSE_ADMIN': [
+                            {
+                                u'accountEmail': u'benfranklin@mit.edu',
+                                u'displayName': u'Benjamin Franklin',
+                                u'editable': False,
+                                u'email': u'benfranklin@mit.edu',
+                                u'givenName': u'Benjamin',
+                                u'middleName': None,
+                                u'mitId': u'921344431',
+                                u'nickName': u'Benjamin',
+                                u'personId': 10710616,
+                                u'sortableName': u'Franklin, Benjamin',
+                                u'surname': u'Franklin',
+                                u'year': None
+                            },
+                        ],
+                        u'COURSE_PROF': [
+                            {
+                                u'accountEmail': u'dduck@mit.edu',
+                                u'displayName': u'Donald Duck',
+                                u'editable': False,
+                                u'email': u'dduck@mit.edu',
+                                u'givenName': u'Donald',
+                                u'middleName': None,
+                                u'mitId': u'916144889',
+                                u'nickName': u'Donald',
+                                u'personId': 8117160,
+                                u'sortableName': u'Duck, Donald',
+                                u'surname': u'Duck',
+                                u'year': None
+                            },
+                        ],
+                        u'COURSE_TA': [
+                            {
+                                u'accountEmail': u'hduck@mit.edu',
+                                u'displayName': u'Huey Duck',
+                                u'editable': False,
+                                u'email': u'hduck@mit.edu',
+                                u'givenName': u'Huey',
+                                u'middleName': None,
+                                u'mitId': u'920445024',
+                                u'nickName': u'Huey',
+                                u'personId': 1299059,
+                                u'sortableName': u'Duck, Huey',
+                                u'surname': u'Duck',
+                                u'year': None
+                            },
+                        ]
+                    },
+                }
+
+
+        """
+        staff_data = self.get(
+            'staff/{gradebookId}'.format(
+                gradebookId=gradebook_id or self.gradebook_id
+            ),
+            params=None,
+        )
+        if simple:
+            simple_list = []
+            unraveled_list = self.unravel_staff(staff_data)
+            for member in unraveled_list.__iter__():
+                simple_list.append({
+                    'accountEmail': member['accountEmail'],
+                    'displayName': member['displayName'],
+                    'role': member['role'],
+                })
+            return simple_list
+        return staff_data['data']
