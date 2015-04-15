@@ -110,6 +110,39 @@ class TestGradebook(BaseTest):
         ]
     }
 
+    STAFF_BODY = {
+        u'data':
+        {
+            u'COURSE_ADMIN':
+            [
+                {
+                    u'accountEmail': u'lduck@mit.edu',
+                    u'displayName': u'Louie Duck',
+                },
+            ],
+            u'COURSE_TA':
+            [
+                {
+                    u'accountEmail': u'benfranklin@mit.edu',
+                    u'displayName': u'Benjamin Franklin',
+                }
+            ]
+        },
+    }
+
+    SIMPLE_STAFF_BODY = [
+        {
+            u'accountEmail': u'lduck@mit.edu',
+            u'displayName': u'Louie Duck',
+            u'role': 'COURSE_ADMIN',
+        },
+        {
+            u'accountEmail': u'benfranklin@mit.edu',
+            u'displayName': u'Benjamin Franklin',
+            u'role': 'COURSE_TA',
+        }
+    ]
+
     @staticmethod
     def _get_grades():
         """Return a dictionary list of grades.
@@ -177,7 +210,6 @@ class TestGradebook(BaseTest):
                 u"gradebookName": u"Gradebook for testingstuff"
             }
         }
-        print('{0}gradebook'.format(self.GRADEBOOK_REGISTER_BASE))
 
         if not send_data:
             del body['data']
@@ -185,6 +217,23 @@ class TestGradebook(BaseTest):
             httpretty.GET,
             '{0}gradebook'.format(self.GRADEBOOK_REGISTER_BASE),
             body=json.dumps(body)
+        )
+
+    def _register_get_options(self, send_data=True):
+        """Handle get_options API call"""
+        if send_data:
+            body = json.dumps(
+                {'data': {'membershipQualifier': '/project/mitxdemosite'}}
+            )
+        else:
+            body = json.dumps({u'data': {u'nada': 'nothing'}})
+        httpretty.register_uri(
+            httpretty.GET,
+            '{0}gradebook/options/{1}'.format(
+                self.GRADEBOOK_REGISTER_BASE,
+                self.GRADEBOOK_ID
+            ),
+            body=body
         )
 
     def _register_get_assignments(self):
@@ -295,7 +344,21 @@ class TestGradebook(BaseTest):
         # Remove data and assert exception raised
         self._register_get_gradebook(False)
         with self.assertRaises(PyLmodUnexpectedData):
-            gradebook_id = test_gradebook.get_gradebook_id(self.GBUUID)
+            test_gradebook.get_gradebook_id(self.GBUUID)
+
+    @httpretty.activate
+    def test_get_options(self):
+        """Verify that we can get the options for a gradebook."""
+        self._register_get_options(True)
+        self._register_get_gradebook()
+        gradebook = GradeBook(self.CERT, self.URLBASE, self.GBUUID)
+        options = gradebook.get_options(gradebook_id=self.GRADEBOOK_ID)
+        self.assertIn('membershipQualifier', options)
+
+        # check for no data
+        self._register_get_options(False)
+        options = gradebook.get_options(gradebook_id=self.GRADEBOOK_ID)
+        self.assertNotIn('membershipQualifier', options)
 
     @httpretty.activate
     def test_get_assignments(self):
@@ -466,15 +529,44 @@ class TestGradebook(BaseTest):
         self.assertEqual(sections, self.SECTION_BODY['data'])
 
         # Check simple style
-        assignments = gradebook.get_sections(simple=True)
+        sections = gradebook.get_sections(simple=True)
         expected_sections = gradebook.unravel_sections(
             self.SECTION_BODY['data']
         )
         self.assertEqual(
-            assignments,
+            sections,
             [{'SectionName': x['name']}
              for x in expected_sections],
         )
+
+    @httpretty.activate
+    def test_get_staff(self):
+        """Verify staff list is returned."""
+        httpretty.register_uri(
+            httpretty.GET,
+            '{0}staff/{1}'.format(
+                self.GRADEBOOK_REGISTER_BASE,
+                self.GRADEBOOK_ID
+            ),
+            body=json.dumps(self.STAFF_BODY)
+        )
+        self._register_get_gradebook()
+        gradebook = GradeBook(self.CERT, self.URLBASE, self.GBUUID)
+        staff = gradebook.get_staff(self.GRADEBOOK_ID)
+        self.assertEqual(staff, self.STAFF_BODY['data'])
+
+        # Check simple style
+        staff = gradebook.get_staff(self.GRADEBOOK_ID, simple=True)
+        expected_staff = gradebook.unravel_staff(self.STAFF_BODY)
+        simple_list = []
+        for member in expected_staff.__iter__():
+            simple_list.append({
+                'accountEmail': member['accountEmail'],
+                'displayName': member['displayName'],
+                'role': member['role'],
+            })
+        for member in staff:
+            self.assertIn(member, simple_list)
 
     @httpretty.activate
     def test_get_section_by_name(self):
