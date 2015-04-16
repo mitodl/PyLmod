@@ -21,5 +21,7 @@ class BaseTest(TestCase):
 
     URLBASE = 'https://testingstuff/'
     GRADEBOOK_REGISTER_BASE = URLBASE + 'service/gradebook/'
+    MEMBERSHIP_REGISTER_BASE = URLBASE + 'service/membership/'
 
     GBUUID = 'STELLAR:/project/testingstuff'
+    CUUID = '/project/testingstuff'
