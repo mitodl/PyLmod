@@ -595,6 +595,7 @@ class GradeBook(Base):
             dict: dictionary containing response ``status`` and ``message``
 
         """
+        log.info('Sending grades: %r', grade_array)
         return self.post(
             'multiGrades/{gradebookId}'.format(
                 gradebookId=gradebook_id or self.gradebook_id
@@ -939,8 +940,17 @@ class GradeBook(Base):
                 successful = True
                 try:
                     # Try to convert to numeric, but grade the
-                    # rest anyway if any particular grade isn't a number
+                    # rest anyway if any particular grade isn't a
+                    # number
                     gradeval = float(row[field]) * 1.0
+                    log.debug(
+                        'Received grade value %s(converted to %s) for '
+                        'student %s on assignment %s',
+                        row[field],
+                        gradeval,
+                        sid,
+                        assignment_id,
+                    )
                 except ValueError as err:
                     log.exception(
                         "Failed in converting grade for student %s"
