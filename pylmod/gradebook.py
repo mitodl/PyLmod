@@ -916,7 +916,7 @@ class GradeBook(Base):
                         shortname = field[0:3] + field[-2:]
                         log.info('calling create_assignment from multi')
                         response = self.create_assignment(
-                            name, shortname, 1.0, 100.0, '12-15-2013'
+                            name, shortname, 1.0, 1.0, '12-15-2013'
                         )
                         if (
                                 not response.get('data', '') or
