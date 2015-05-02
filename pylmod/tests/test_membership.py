@@ -19,7 +19,8 @@ class TestMembership(BaseTest):
     # Unit tests generally should do protected-accesses
     # pylint: disable=protected-access
     COURSE_ID = 12345
-
+    ROLE = 'student'
+    EMAIL = 'bigclass121@example.com'
     STAFF_BODY = {
         u'response':
         {
@@ -72,6 +73,17 @@ class TestMembership(BaseTest):
             ],
         },
     }
+    MEMBERSHIP_DATA = {
+        u'response': {
+            u'docs':
+            [
+                {
+                    "roleType": "student",
+                    "email": "bigclass121@example.com",
+                },
+            ]
+        }
+    }
 
     def _register_get_course_id(self, body):
         """Handle API call to get course id"""
@@ -82,6 +94,29 @@ class TestMembership(BaseTest):
                 self.CUUID,
             ),
             body=json.dumps(body)
+        )
+
+    def _register_get_group(self, body):
+        """Handle API call to get group"""
+        httpretty.register_uri(
+            httpretty.GET,
+            '{0}group?uuid={1}'.format(
+                self.MEMBERSHIP_REGISTER_BASE,
+                self.CUUID,
+            ),
+            body=json.dumps(body),
+        )
+
+    def _register_get_membership(self, body):
+        """Handle API call to get membership"""
+        uri = '{0}group/{1}/member'.format(
+            self.MEMBERSHIP_REGISTER_BASE,
+            self.COURSE_DATA['response']['docs'][0]['id'],
+        )
+        httpretty.register_uri(
+            httpretty.GET,
+            uri,
+            body=json.dumps(body),
         )
 
     def test_constructor(self):
@@ -160,3 +195,33 @@ class TestMembership(BaseTest):
         self._register_get_course_id(test_body)
         with self.assertRaises(PyLmodUnexpectedData):
             test_membership.get_course_id(self.CUUID)
+
+    @httpretty.activate
+    def test_get_group(self):
+        self._register_get_group(body=self.COURSE_DATA)
+        test_membership = Membership(self.CERT, self.URLBASE)
+        group_data = test_membership.get_group(self.CUUID)
+        assert group_data == self.COURSE_DATA
+
+    @httpretty.activate
+    def test_get_group_id(self):
+        self._register_get_group(body=self.COURSE_DATA)
+        test_membership = Membership(self.CERT, self.URLBASE)
+        group_id = test_membership.get_group_id(self.CUUID)
+        assert group_id == self.COURSE_DATA['response']['docs'][0]['id']
+
+    @httpretty.activate
+    def test_get_membership(self):
+        self._register_get_group(body=self.COURSE_DATA)
+        self._register_get_membership(body=self.MEMBERSHIP_DATA)
+        test_membership = Membership(self.CERT, self.URLBASE)
+        mbr_data = test_membership.get_membership(self.CUUID)
+        assert mbr_data == self.MEMBERSHIP_DATA
+
+    @httpretty.activate
+    def test_email_has_role(self):
+        self._register_get_group(body=self.COURSE_DATA)
+        self._register_get_membership(body=self.MEMBERSHIP_DATA)
+        test_membership = Membership(self.CERT, self.URLBASE)
+        has_role = test_membership.email_has_role(self.EMAIL, self.ROLE, uuid=self.CUUID)
+        assert has_role is True
