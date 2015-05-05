@@ -73,6 +73,7 @@ class TestMembership(BaseTest):
             ],
         },
     }
+
     MEMBERSHIP_DATA = {
         u'response': {
             u'docs':

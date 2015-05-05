@@ -113,7 +113,6 @@ class Base(object):
                 "rest_action, err=%s", err
             )
             raise err
-        # return response
         try:
             return response.json()
         except ValueError, err:
