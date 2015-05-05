@@ -223,5 +223,7 @@ class TestMembership(BaseTest):
         self._register_get_group(body=self.COURSE_DATA)
         self._register_get_membership(body=self.MEMBERSHIP_DATA)
         test_membership = Membership(self.CERT, self.URLBASE)
-        has_role = test_membership.email_has_role(self.EMAIL, self.ROLE, uuid=self.CUUID)
+        has_role = test_membership.email_has_role(
+            self.EMAIL, self.ROLE, uuid=self.CUUID
+        )
         assert has_role is True

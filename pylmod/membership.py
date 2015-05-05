@@ -9,14 +9,12 @@ log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
 class Membership(Base):
-
     """Provide API for functions that return group membership data from
     MIT Learning Modules Web service.
 
     API reference at
     https://learning-modules-dev.mit.edu/service/membership/doc.html
     """
-
     def __init__(
             self,
             cert,
@@ -34,7 +32,7 @@ class Membership(Base):
         """Get group data based on uuid.
 
         Args:
-            uuid (str): optional uuid, e.g. '/project/mitxdemosite'
+            uuid (str): optional uuid. defaults to self.cuuid
 
         Raises:
             PyLmodUnexpectedData: No data was returned.
@@ -45,7 +43,7 @@ class Membership(Base):
 
         """
         if uuid is None:
-            uuid = self.cuuid  # so does course_id == group_id?
+            uuid = self.cuuid
         group_data = self.get('group', params={'uuid': uuid})
         return group_data
 
@@ -53,7 +51,7 @@ class Membership(Base):
         """Get group id based on uuid.
 
         Args:
-            uuid (str): optional uuid, e.g. '/project/mitxdemosite'
+            uuid (str): optional uuid. defaults to self.cuuid
 
         Raises:
             PyLmodUnexpectedData: No group data was returned.
@@ -77,7 +75,7 @@ class Membership(Base):
         """Get membership data based on uuid.
 
         Args:
-            uuid (str): optional uuid, e.g. '/project/mitxdemosite'
+            uuid (str): optional uuid. defaults to self.cuuid
 
         Raises:
             PyLmodUnexpectedData: No data was returned.
@@ -97,8 +95,8 @@ class Membership(Base):
 
         Args:
             email (str): user email
-            role_name (str): user role, e.g. 'staff'
-            uuid (str): optional uuid, e.g. '/project/mitxdemosite'
+            role_name (str): user role
+            uuid (str): optional uuid. defaults to self.cuuid
 
         Raises:
             PyLmodUnexpectedData: Unexpected data was returned.
