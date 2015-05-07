@@ -70,7 +70,6 @@ class Membership(Base):
                                'got {0}'.format(group_data))
             log.exception(failure_message)
             raise PyLmodUnexpectedData(failure_message)
-        return None
 
     def get_membership(self, uuid=None):
         """Get membership data based on uuid.
