@@ -19,14 +19,15 @@ class Membership(Base):
             self,
             cert,
             urlbase='https://learning-modules.mit.edu:8443/',
-            cuuid=None
+            uuid=None
     ):
         super(Membership, self).__init__(cert, urlbase)
         # Add service base
         self.urlbase += 'service/membership/'
         self.course_id = None
-        if cuuid is not None:
-            self.course_id = self.get_course_id(cuuid)
+        self.uuid = uuid
+        if uuid is not None:
+            self.course_id = self.get_course_id(uuid)
 
     def get_group(self, uuid=None):
         """Get group data based on uuid.
@@ -43,7 +44,7 @@ class Membership(Base):
 
         """
         if uuid is None:
-            uuid = self.cuuid
+            uuid = self.uuid
         group_data = self.get('group', params={'uuid': uuid})
         return group_data
 

@@ -126,7 +126,7 @@ class TestMembership(BaseTest):
         """
         # Strip off base URL to make sure it comes back
         urlbase = self.URLBASE[:-1]
-        test_membership = Membership(self.CERT, cuuid=None, urlbase=urlbase)
+        test_membership = Membership(self.CERT, uuid=None, urlbase=urlbase)
         self.assertEqual(
             test_membership.urlbase,
             self.URLBASE + 'service/membership/'
@@ -228,3 +228,69 @@ class TestMembership(BaseTest):
             self.EMAIL, self.ROLE, uuid=self.CUUID
         )
         assert has_role is True
+        has_role = test_membership.email_has_role(
+            self.EMAIL, 'hacker', uuid=self.CUUID
+        )
+        assert has_role is False
+
+    @httpretty.activate
+    def test_get_group_default_uuid(self):
+        self._register_get_group(body=self.COURSE_DATA)
+        test_membership = Membership(self.CERT, self.URLBASE)
+        group_data = test_membership.get_group()
+        assert group_data == self.COURSE_DATA
+
+    @httpretty.activate
+    @patch('pylmod.membership.log')
+    def test_get_group_id_errors(self, mock_log):
+        test_membership = Membership(self.CERT, self.URLBASE)
+
+        # IndexError
+        test_body = {u'response': {u'docs': []}}
+        self._register_get_group(body=test_body)
+        with self.assertRaises(PyLmodUnexpectedData):
+            test_membership.get_group_id(self.CUUID)
+        mock_log.exception.assert_called_with(
+            "Error in get_group response data - "
+            "got {u'response': {u'docs': []}}"
+        )
+
+        # KeyError
+        test_body = {u'response': {u'foo': []}}
+        self._register_get_group(body=test_body)
+        with self.assertRaises(PyLmodUnexpectedData):
+            test_membership.get_group_id(self.CUUID)
+        mock_log.exception.assert_called_with(
+            "Error in get_group response data - "
+            "got {u'response': {u'foo': []}}"
+        )
+
+    @httpretty.activate
+    @patch('pylmod.membership.log')
+    def test_email_has_role_errors(self, mock_log):
+        test_membership = Membership(self.CERT, self.URLBASE)
+
+        # KeyError
+        test_body = {u'response': {u'foo': []}}
+        self._register_get_group(body=self.COURSE_DATA)
+        self._register_get_membership(body=test_body)
+        with self.assertRaises(PyLmodUnexpectedData):
+            test_membership.email_has_role(
+                self.EMAIL, self.ROLE, uuid=self.CUUID
+            )
+        mock_log.exception.assert_called_with(
+            "KeyError in membership data - "
+            "got {u'response': {u'foo': []}}"
+        )
+
+    @httpretty.activate
+    def test_email_has_role_docs(self):
+        # len(docs) == 0
+        test_body = {u'response': {u'docs': []}}
+        self._register_get_group(body=self.COURSE_DATA)
+        self._register_get_membership(body=test_body)
+        test_membership = Membership(self.CERT, self.URLBASE)
+        has_role = test_membership.email_has_role(
+            self.EMAIL, self.ROLE, uuid=self.CUUID
+        )
+        assert has_role is False
