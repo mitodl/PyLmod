@@ -179,7 +179,8 @@ class TestGradebook(BaseTest):
         """Get a list of spreadsheet rows as dictionaries
 
         Get a list of spreadsheet row values to test submitting
-        grades in a spreadsheet to the LMod web service.
+        grades in a spreadsheet to the LMod web service. Only
+        grades with sid not equal to none are valid.
 
         Args:
             approve_grades (boolean): list of spreadsheet rows as
@@ -194,11 +195,6 @@ class TestGradebook(BaseTest):
                  'mode': 2,
                  'numericGradeValue': 2.2,
                  'studentId': 1},
-                {'assignmentId': 1,
-                 'isGradeApproved': approve_grades,
-                 'mode': 2,
-                 'numericGradeValue': 1.1,
-                 'studentId': None},
         ]
 
     def _register_get_gradebook(self, send_data=True):
