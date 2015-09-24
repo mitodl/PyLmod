@@ -600,7 +600,7 @@ class GradeBook(Base):
         grade_multipliers = self.get_grade_multipliers()
         for rec in grade_array:
             rec["numericGradeValue"] = (
-                rec["numericGradeValue"] * 
+                rec["numericGradeValue"] *
                 grade_multipliers.get(rec["assignmentId"], 1)
             )
             
