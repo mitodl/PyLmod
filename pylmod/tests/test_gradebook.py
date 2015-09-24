@@ -186,7 +186,7 @@ class TestGradebook(BaseTest):
                 {'assignmentId': 1,
                  'isGradeApproved': approve_grades,
                  'mode': 2,
-                 'numericGradeValue': 2.2,
+                 'numericGradeValue': 22.0,
                  'studentId': 1},
                 {'assignmentId': 1,
                  'isGradeApproved': approve_grades,
