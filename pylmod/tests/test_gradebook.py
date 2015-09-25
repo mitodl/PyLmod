@@ -805,7 +805,11 @@ class TestGradebook(BaseTest):
             ])
         )
 
-    @mock.patch.object(GradeBook, '_spreadsheet2gradebook_multi')
+    @mock.patch.object(
+        GradeBook,
+        '_spreadsheet2gradebook_multi',
+        autospec=True
+    )
     @mock.patch('csv.DictReader')
     def test_spreadshee2gradebook(self, csv_patch, multi_patch):
         """Do a simple test of the spreadsheet to gradebook public method"""
@@ -821,32 +825,32 @@ class TestGradebook(BaseTest):
             gradebook.spreadsheet2gradebook(temp_file.name)
             called_with = multi_patch.call_args
             assert csv_patch.call_count == 1
-            self.assertEqual(called_with[0][1], email_field)
-            self.assertEqual(called_with[0][2], non_assignment_fields)
+            self.assertEqual(called_with[0][2], email_field)
+            self.assertEqual(called_with[0][3], non_assignment_fields)
 
         # Test with tmp file handle, approve_grades=False
         with tempfile.NamedTemporaryFile(delete=True) as temp_file:
             gradebook.spreadsheet2gradebook(temp_file.name,
                                             approve_grades=False)
             called_with = multi_patch.call_args
-            assert csv_patch.call_count == 1
-            self.assertEqual(called_with[0][1], email_field)
-            self.assertEqual(called_with[0][2], non_assignment_fields)
+            assert csv_patch.call_count == 2
+            self.assertEqual(called_with[0][2], email_field)
+            self.assertEqual(called_with[0][3], non_assignment_fields)
 
         # Test with tmp file handle, approve_grades=True
         with tempfile.NamedTemporaryFile(delete=True) as temp_file:
             gradebook.spreadsheet2gradebook(temp_file.name,
                                             approve_grades=True)
             called_with = multi_patch.call_args
-            assert csv_patch.call_count == 1
-            self.assertEqual(called_with[0][1], email_field)
-            self.assertEqual(called_with[0][2], non_assignment_fields)
+            assert csv_patch.call_count == 3
+            self.assertEqual(called_with[0][2], email_field)
+            self.assertEqual(called_with[0][3], non_assignment_fields)
 
         # Test with patched csvReader and named e-mail field
         alternate_email_field = 'stuff'
         gradebook.spreadsheet2gradebook(csv_patch, alternate_email_field)
         non_assignment_fields.append(alternate_email_field)
         called_with = multi_patch.call_args
-        assert csv_patch.call_count == 1
-        self.assertEqual(called_with[0][1], alternate_email_field)
-        self.assertEqual(called_with[0][2], non_assignment_fields)
+        assert csv_patch.call_count == 4
+        self.assertEqual(called_with[0][2], alternate_email_field)
+        self.assertEqual(called_with[0][3], non_assignment_fields)
