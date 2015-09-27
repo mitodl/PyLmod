@@ -600,10 +600,10 @@ class GradeBook(Base):
         grade_multipliers = self.get_grade_multipliers()
         for rec in grade_array:
             rec["numericGradeValue"] = (
-                rec["numericGradeValue"] *
+                float(rec["numericGradeValue"]) *
                 grade_multipliers.get(rec["assignmentId"], 1)
             )
-            
+
         log.info('Sending grades: %r', grade_array)
         return self.post(
             'multiGrades/{gradebookId}'.format(

@@ -508,6 +508,7 @@ class TestGradebook(BaseTest):
         response_data = {'message': 'success'}
         self._register_multi_grade(response_data)
         self._register_get_gradebook()
+        self._register_get_assignments()
 
         gradebook = GradeBook(self.CERT, self.URLBASE, self.GBUUID)
         grades = self._get_grades()
