@@ -56,6 +56,7 @@ class GradeBook(Base):
         self.urlbase += 'service/gradebook/'
         if gbuuid is not None:
             self.gradebook_id = self.get_gradebook_id(gbuuid)
+        self._assignment_cache = None
 
     @staticmethod
     def unravel_sections(section_data):
@@ -269,6 +270,7 @@ class GradeBook(Base):
             ),
             params=params,
         )
+        self._assignment_cache = assignments['data']
         if simple:
             return [{'AssignmentName': x['name']}
                     for x in assignments['data']]
@@ -595,6 +597,13 @@ class GradeBook(Base):
             dict: dictionary containing response ``status`` and ``message``
 
         """
+        grade_multipliers = self.get_grade_multipliers()
+        for rec in grade_array:
+            rec["numericGradeValue"] = (
+                float(rec["numericGradeValue"]) *
+                grade_multipliers.get(rec["assignmentId"], 1)
+            )
+
         log.info('Sending grades: %r', grade_array)
         return self.post(
             'multiGrades/{gradebookId}'.format(
@@ -1130,3 +1139,17 @@ class GradeBook(Base):
                 })
             return simple_list
         return staff_data['data']
+
+    def get_grade_multipliers(self):
+        """
+        Use cached data from self.get_assignments() to provide the
+        grade multipliers (maxPointsTotal value).
+        """
+        if self._assignment_cache is None:
+            # fill cache
+            self.get_assignments()
+
+        return {
+            x["assignmentId"]: x["maxPointsTotal"]
+            for x in self._assignment_cache
+        }
