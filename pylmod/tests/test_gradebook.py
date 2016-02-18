@@ -5,6 +5,11 @@ import json
 import tempfile
 import time
 
+from ddt import (
+    data,
+    ddt,
+    unpack
+)
 import httpretty
 import mock
 
@@ -17,6 +22,7 @@ from pylmod.exceptions import (
 from pylmod.tests.common import BaseTest
 
 
+@ddt
 class TestGradebook(BaseTest):
     """Validate defined gradebook methods in GradeBook class
     """
@@ -805,13 +811,196 @@ class TestGradebook(BaseTest):
             ]
         )
 
+    @data(
+        (50, 0, True, 50),  # happy case
+        ('50', '0', True, 50),  # happy case with strings
+        ('', '0', True, 1),  # max_points is an invalid number
+        (None, '0', True, 1),  # max_points is missing
+        ('50', '1', True, 1),  # normalize is true
+        ('50', '', True, 1),  # normalize is an invalid number
+        ('50', None, True, 1),  # normalize is missing
+        ('50', '0', False, 1),  # use_max_points_column is False
+    )
+    @unpack
+    @httpretty.activate
+    def test_use_max_points_column(
+            self, max_points, normalize, use_max_points_column,
+            expected_max_points):
+        """
+        If use_max_points_column is True and normalize? is False,
+        use the max_points value.
+        """
+        def handle_create(request, uri, headers):
+            """Assert that the create POST looks the way we expect it to"""
+            expected_post = {
+                "gradingSchemeType": "NUMERIC",
+                "name": "New homework",
+                "weight": 1.0,
+                "dueDateString": "12-15-2013",
+                "shortName": "Newrk",
+                "graderVisible": False,
+                "maxPointsTotal": expected_max_points,
+                "gradebookId": 1234
+            }
+            assert expected_post == json.loads(request.body)
+            body = json.dumps({'data': {'assignmentId': new_assignment_id}})
+            return 200, headers, body
+
+        new_assignment_id = 3  # just an unused ID number
+        # Make sure that an error is raised if self.ASSIGNMENT_BODY
+        # is updated without updating this test too
+        for assignment in self.ASSIGNMENT_BODY['data']:
+            assert assignment['assignmentId'] != new_assignment_id
+
+        httpretty.register_uri(
+            httpretty.POST,
+            '{0}assignment'.format(self.GRADEBOOK_REGISTER_BASE),
+            body=handle_create
+        )
+        self._register_get_gradebook()
+        self._register_get_assignments()
+        self._register_get_students()
+        self._register_multi_grade({'message': 'success'})
+
+        gradebook = GradeBook(self.CERT, self.URLBASE, self.GBUUID)
+
+        spreadsheet = [
+            {
+                'External email': 'a@example.com',
+                'New homework': 2.2,
+                'max_pts': max_points,
+                'normalize': normalize
+            }
+        ]
+        gradebook._spreadsheet2gradebook_multi(
+            csv_reader=spreadsheet,
+            email_field='External email',
+            non_assignment_fields=[
+                'External email', 'max_pts', 'normalize'
+            ],
+            approve_grades=False,
+            use_max_points_column=use_max_points_column,
+            max_points_column='max_pts',
+            normalize_column='normalize'
+        )
+        # Verify that we got the grades we expect
+        last_request = httpretty.last_request()
+        assert json.loads(last_request.body) == [
+            {
+                u'assignmentId': new_assignment_id,
+                u'studentId': 1,
+                u'numericGradeValue': 2.2,
+                u'mode': 2,
+                u'isGradeApproved': False
+            }
+        ]
+
+    @httpretty.activate
+    def test_no_max_points_column(self):
+        """
+        If the input spreadsheet has no columns matching the max points or
+        normalize column names, use the default max points value.
+        """
+        def handle_create(request, uri, headers):
+            """Assert that the create POST looks the way we expect it to"""
+            expected_post = {
+                "gradingSchemeType": "NUMERIC",
+                "name": "New homework",
+                "weight": 1.0,
+                "dueDateString": "12-15-2013",
+                "shortName": "Newrk",
+                "graderVisible": False,
+                "maxPointsTotal": 1,  # 1 is the default value
+                "gradebookId": 1234
+            }
+            assert expected_post == json.loads(request.body)
+            body = json.dumps({'data': {'assignmentId': new_assignment_id}})
+            return 200, headers, body
+
+        new_assignment_id = 3  # just an unused ID number
+        # Make sure that an error is raised if self.ASSIGNMENT_BODY
+        # is updated without updating this test too
+        for assignment in self.ASSIGNMENT_BODY['data']:
+            assert assignment['assignmentId'] != new_assignment_id
+
+        httpretty.register_uri(
+            httpretty.POST,
+            '{0}assignment'.format(self.GRADEBOOK_REGISTER_BASE),
+            body=handle_create
+        )
+        self._register_get_gradebook()
+        self._register_get_assignments()
+        self._register_get_students()
+        self._register_multi_grade({'message': 'success'})
+
+        gradebook = GradeBook(self.CERT, self.URLBASE, self.GBUUID)
+
+        spreadsheet = [
+            {
+                'External email': 'a@example.com',
+                'New homework': 2.2
+            }
+        ]
+        gradebook._spreadsheet2gradebook_multi(
+            csv_reader=spreadsheet,
+            email_field='External email',
+            non_assignment_fields=[
+                'External email', 'max_pts', 'normalize'
+            ],
+            approve_grades=False,
+            use_max_points_column=True,
+            max_points_column='max_pts',
+            normalize_column='normalize'
+        )
+
+    @data(
+        ('max_points_column',),
+        ('normalize_column',),
+    )
+    @unpack
+    @httpretty.activate
+    def test_max_points_argument_mismatch(self, key):
+        """
+        If the input spreadsheet has no columns matching the max points or
+        normalize column names, use the default max points value.
+        """
+        self._register_get_gradebook()
+        self._register_get_assignments()
+        self._register_get_students()
+        gradebook = GradeBook(self.CERT, self.URLBASE, self.GBUUID)
+
+        spreadsheet = [
+            {
+                'External email': 'a@example.com',
+                'New homework': 2.2
+            }
+        ]
+        kwargs = dict(
+            csv_reader=spreadsheet,
+            email_field='External email',
+            non_assignment_fields=[
+                'External email', 'max_pts', 'normalize'
+            ],
+            approve_grades=False,
+            use_max_points_column=True,
+            max_points_column='max_pts',
+            normalize_column='normalize'
+        )
+        del kwargs[key]
+        with self.assertRaises(ValueError) as ex:
+            gradebook._spreadsheet2gradebook_multi(**kwargs)
+
+        assert ex.exception[0] == (
+            '{} must be set if use_max_points_column is set'.format(key)
+        )
+
     @mock.patch.object(
         GradeBook,
         '_spreadsheet2gradebook_multi',
         autospec=True,
     )
     @mock.patch('csv.DictReader')
-    def test_spreadshee2gradebook(self, csv_patch, multi_patch):
+    def test_spreadsheet2gradebook(self, csv_patch, multi_patch):
         """Do a simple test of the spreadsheet to gradebook public method"""
 
         non_assignment_fields = [
@@ -835,6 +1024,7 @@ class TestGradebook(BaseTest):
             assert csv_patch.call_count == 2
             self.assertEqual(called_with[0][2], email_field)
             self.assertEqual(called_with[0][3], non_assignment_fields)
+            self.assertEqual(called_with[1]['approve_grades'], False)
         # Test with tmp file handle, approve_grades=True
         with tempfile.NamedTemporaryFile(delete=True) as temp_file:
             gradebook.spreadsheet2gradebook(temp_file.name,
@@ -843,6 +1033,7 @@ class TestGradebook(BaseTest):
             assert csv_patch.call_count == 3
             self.assertEqual(called_with[0][2], email_field)
             self.assertEqual(called_with[0][3], non_assignment_fields)
+            self.assertEqual(called_with[1]['approve_grades'], True)
 
         # Test with patched csvReader and named e-mail field
         alternate_email_field = 'stuff'
@@ -852,3 +1043,29 @@ class TestGradebook(BaseTest):
         assert csv_patch.call_count == 4
         self.assertEqual(called_with[0][2], alternate_email_field)
         self.assertEqual(called_with[0][3], non_assignment_fields)
+
+    @mock.patch.object(
+        GradeBook,
+        '_spreadsheet2gradebook_multi',
+        autospec=True,
+    )
+    @mock.patch('csv.DictReader')
+    def test_spreadsheet2gradebook_max_points(self, csv_patch, multi_patch):
+        """
+        Make sure that the new arguments added are passed to
+        _spreadsheet2gradebook_multi
+        """
+        gradebook = GradeBook(self.CERT, self.URLBASE)
+
+        with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+            gradebook.spreadsheet2gradebook(
+                temp_file.name,
+                use_max_points_column=True,
+                max_points_column='max_pts',
+                normalize_column='normalize'
+            )
+            _, kwargs = multi_patch.call_args
+            assert csv_patch.call_count == 1
+            self.assertEqual(kwargs['use_max_points_column'], True)
+            self.assertEqual(kwargs['max_points_column'], 'max_pts')
+            self.assertEqual(kwargs['normalize_column'], 'normalize')
