@@ -690,8 +690,8 @@ class TestGradebook(BaseTest):
         # Verify that we got the grades we expect
         last_request = httpretty.last_request()
         self.assertEqual(
-            last_request.body,
-            json.dumps(self._get_multigrade(approve_grades=False))
+            json.loads(last_request.body),
+            self._get_multigrade(approve_grades=False)
         )
         # Verify that we got the same grades, setting auto-approve = False
         gradebook._spreadsheet2gradebook_multi(
@@ -703,8 +703,8 @@ class TestGradebook(BaseTest):
         # Verify that we got the grades we expect
         last_request = httpretty.last_request()
         self.assertEqual(
-            last_request.body,
-            json.dumps(self._get_multigrade(approve_grades=False))
+            json.loads(last_request.body),
+            self._get_multigrade(approve_grades=False)
         )
         # Verify that we got the same grades, setting auto-approve = False
         gradebook._spreadsheet2gradebook_multi(
@@ -716,8 +716,8 @@ class TestGradebook(BaseTest):
         # Verify that we got the grades we expect
         last_request = httpretty.last_request()
         self.assertEqual(
-            last_request.body,
-            json.dumps(self._get_multigrade(approve_grades=False))
+            json.loads(last_request.body),
+            self._get_multigrade(approve_grades=False)
         )
 
         # Verify that we got the same grades, setting auto-approve = True
@@ -730,8 +730,8 @@ class TestGradebook(BaseTest):
         # Verify that we got the grades we expect
         last_request = httpretty.last_request()
         self.assertEqual(
-            last_request.body,
-            json.dumps(self._get_multigrade(approve_grades=True))
+            json.loads(last_request.body),
+            self._get_multigrade(approve_grades=True)
         )
 
         # Verify that we got the same grades, setting auto-approve = True
@@ -744,8 +744,8 @@ class TestGradebook(BaseTest):
         # Verify that we got the grades we expect
         last_request = httpretty.last_request()
         self.assertEqual(
-            last_request.body,
-            json.dumps(self._get_multigrade(approve_grades=True))
+            json.loads(last_request.body),
+            self._get_multigrade(approve_grades=True)
         )
 
         # Now run it when the assignment doesn't exist to exercise
@@ -768,8 +768,8 @@ class TestGradebook(BaseTest):
         expected_response = self._get_multigrade(approve_grades=False)[0]
         expected_response['assignmentId'] = assignment_id
         self.assertEqual(
-            last_request.body,
-            json.dumps([expected_response])
+            json.loads(last_request.body),
+            [expected_response]
         )
 
         # Now with assignment failing to be created
@@ -795,14 +795,14 @@ class TestGradebook(BaseTest):
         )
         last_request = httpretty.last_request()
         self.assertEqual(
-            last_request.body,
-            json.dumps([
+            json.loads(last_request.body),
+            [
                 {u'assignmentId': 2,
                  u'isGradeApproved': False,
                  u'mode': 2,
                  u'numericGradeValue': 1.1,
                  u'studentId': 1},
-            ])
+            ]
         )
 
     @mock.patch.object(
