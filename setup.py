@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 from setuptools.command.test import test as testcommand
 
 with open('test_requirements.txt') as test_reqs:
-    tests_require = test_reqs.readlines(),
+    tests_require = test_reqs.readlines()
 
 
 class PyTest(testcommand):
