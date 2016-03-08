@@ -1069,3 +1069,11 @@ class TestGradebook(BaseTest):
             self.assertEqual(kwargs['use_max_points_column'], True)
             self.assertEqual(kwargs['max_points_column'], 'max_pts')
             self.assertEqual(kwargs['normalize_column'], 'normalize')
+            self.assertIn(
+                kwargs['max_points_column'],
+                multi_patch.call_args[0][3]
+            )
+            self.assertIn(
+                kwargs['normalize_column'],
+                multi_patch.call_args[0][3]
+            )
