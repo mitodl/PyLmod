@@ -1064,7 +1064,9 @@ class GradeBook(Base):
         address (for looking up and matching studentId).
 
         These columns are disregarded: ``ID``, ``Username``,
-        ``Full Name``, ``edX email``, ``External email``.
+        ``Full Name``, ``edX email``, ``External email``,
+        as well as the strings passed in ``max_points_column``
+        and ``normalize_column``, if any.
         All other columns are taken as assignments.
 
         If ``email_field`` is specified, then that field name is taken as
@@ -1104,6 +1106,10 @@ class GradeBook(Base):
         non_assignment_fields = [
             'ID', 'Username', 'Full Name', 'edX email', 'External email'
         ]
+        if max_points_column is not None:
+            non_assignment_fields.append(max_points_column)
+        if normalize_column is not None:
+            non_assignment_fields.append(normalize_column)
 
         if email_field is not None:
             non_assignment_fields.append(email_field)
