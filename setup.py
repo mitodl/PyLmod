@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 from setuptools.command.test import test as testcommand
 
 with open('test_requirements.txt') as test_reqs:
-    tests_require = test_reqs.readlines(),
+    tests_require = test_reqs.readlines()
 
 
 class PyTest(testcommand):
@@ -42,10 +42,6 @@ class PyTest(testcommand):
         import pytest
         # Needed in order for pytest_cache to load properly
         # Alternate fix: import pytest_cache and pass to pytest.main
-        import _pytest.config
-
-        pm = _pytest.config.get_plugin_manager()
-        pm.consider_setuptools_entrypoints()
         errno = pytest.main(self.test_args)
         sys.exit(errno)
 
@@ -54,7 +50,7 @@ README = open('README.rst').read()
 
 setup(
     name='pylmod',
-    version='0.1.0',
+    version='0.2.0',
     license='BSD',
     author='MIT ODL Engineering',
     author_email='odl-engineering@mit.edu',

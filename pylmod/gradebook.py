@@ -16,6 +16,9 @@ from pylmod.exceptions import (
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
+DEFAULT_MAX_POINTS = 1.0
+
+
 class GradeBook(Base):
     """
     Since the MIT Learning Modules Web service (LMod) usually returns
@@ -129,6 +132,8 @@ class GradeBook(Base):
             gradebook_id (str): unique identifier for gradebook, i.e. ``2314``
 
         Returns:
+
+            An example return value is:
 
             .. code-block:: python
 
@@ -284,7 +289,7 @@ class GradeBook(Base):
 
         Args:
             assignment_name (str): name of assignment
-            assignments (dict): assignments to search, default: None
+            assignments (list): assignments to search, default: None
                 When ``assignments`` is unspecified, all assignments
                 are retrieved from the service.
 
@@ -840,7 +845,7 @@ class GradeBook(Base):
 
         Args:
             email (str): student email
-            students (dict): dictionary of students to search, default: None
+            students (list): dictionary of students to search, default: None
                 When ``students`` is unspecified, all students in gradebook
                 are retrieved.
 
@@ -865,7 +870,10 @@ class GradeBook(Base):
             csv_reader,
             email_field,
             non_assignment_fields,
-            approve_grades=False
+            approve_grades=False,
+            use_max_points_column=False,
+            max_points_column=None,
+            normalize_column=None
     ):
         """Transfer grades from spreadsheet to array.
 
@@ -875,10 +883,19 @@ class GradeBook(Base):
         make one call to the Gradebook API.
 
         Args:
-            csv_reader (list): list of rows in CSV file
-            email_field (str):
-            non_assignment_fields (list):
-                list of column names in CSV file that
+            csv_reader (csv.DictReader): list of rows in CSV file
+            email_field (str): The name of the email field
+            non_assignment_fields (list): list of column names in CSV file
+                which should not be treated as assignment names
+            approve_grades (bool): Should grades be auto approved?
+            use_max_points_column (bool): If true, read the max points
+                and normalize values from the CSV and use the max points value
+                in place of the default if normalized is False.
+            max_points_column (str): The name of the max_pts column. All
+                rows contain the same number, the max points for
+                the assignment.
+            normalize_column (str): The name of the normalize column which
+                indicates whether to use the max points value.
 
         Raises:
             PyLmodFailedAssignmentCreation: Failed to create assignment
@@ -891,6 +908,18 @@ class GradeBook(Base):
 
         """
         # pylint: disable=too-many-locals
+        if use_max_points_column:
+            if max_points_column is None:
+                raise ValueError(
+                    "max_points_column must be set "
+                    "if use_max_points_column is set"
+                )
+            if normalize_column is None:
+                raise ValueError(
+                    "normalize_column must be set "
+                    "if use_max_points_column is set"
+                )
+
         assignments = self.get_assignments()
         students = self.get_students()
         assignment2id = {}
@@ -915,8 +944,48 @@ class GradeBook(Base):
                         name = field
                         shortname = field[0:3] + field[-2:]
                         log.info('calling create_assignment from multi')
+
+                        # If the max_pts and normalize columns are present,
+                        # and use_max_points_column is True,
+                        # replace the default value for max points.
+                        max_points = DEFAULT_MAX_POINTS
+                        if use_max_points_column:
+                            # This value means it was already normalized, and
+                            # we should use the default max points
+                            # instead of the one in the CSV.
+                            normalize_value = True
+                            normalize_value_str = row.get(normalize_column)
+                            if normalize_value_str is not None:
+                                try:
+                                    normalize_value = bool(
+                                        int(normalize_value_str)
+                                    )
+                                except ValueError as ex:
+                                    # Value is already normalized
+                                    log.warning(
+                                        'Bool conversion error '
+                                        ' in normalize column for '
+                                        'value: %s, exception: %s',
+                                        normalize_value_str,
+                                        ex
+                                    )
+
+                            if not normalize_value:
+                                max_points_str = row.get(max_points_column)
+                                if max_points_str is not None:
+                                    try:
+                                        max_points = float(max_points_str)
+                                    except ValueError as ex:
+                                        log.warning(
+                                            'Floating point conversion error '
+                                            'in max points column for '
+                                            'value: %s, exception: %s',
+                                            max_points_str,
+                                            ex
+                                        )
+
                         response = self.create_assignment(
-                            name, shortname, 1.0, 100.0, '12-15-2013'
+                            name, shortname, 1.0, max_points, '12-15-2013'
                         )
                         if (
                                 not response.get('data', '') or
@@ -981,7 +1050,13 @@ class GradeBook(Base):
         return response, duration
 
     def spreadsheet2gradebook(
-            self, csv_file, email_field=None, approve_grades=False
+            self,
+            csv_file,
+            email_field=None,
+            approve_grades=False,
+            use_max_points_column=False,
+            max_points_column=None,
+            normalize_column=None
     ):
         """Upload grade spreadsheet to gradebook.
 
@@ -991,7 +1066,9 @@ class GradeBook(Base):
         address (for looking up and matching studentId).
 
         These columns are disregarded: ``ID``, ``Username``,
-        ``Full Name``, ``edX email``, ``External email``.
+        ``Full Name``, ``edX email``, ``External email``,
+        as well as the strings passed in ``max_points_column``
+        and ``normalize_column``, if any.
         All other columns are taken as assignments.
 
         If ``email_field`` is specified, then that field name is taken as
@@ -1007,6 +1084,16 @@ class GradeBook(Base):
         Args:
             csv_reader (str): filename of csv data, or readable file object
             email_field (str): student's email
+            approve_grades (bool): Should grades be auto approved?
+            use_max_points_column (bool):
+                If ``True``, read the max points and normalize values
+                from the CSV and use the max points value in place of
+                the default if normalized is ``False``.
+            max_points_column (str): The name of the max_pts column. All
+                rows contain the same number, the max points for
+                the assignment.
+            normalize_column (str): The name of the normalize column which
+                indicates whether to use the max points value.
 
         Raises:
             PyLmodFailedAssignmentCreation: Failed to create assignment
@@ -1021,6 +1108,10 @@ class GradeBook(Base):
         non_assignment_fields = [
             'ID', 'Username', 'Full Name', 'edX email', 'External email'
         ]
+        if max_points_column is not None:
+            non_assignment_fields.append(max_points_column)
+        if normalize_column is not None:
+            non_assignment_fields.append(normalize_column)
 
         if email_field is not None:
             non_assignment_fields.append(email_field)
@@ -1034,7 +1125,13 @@ class GradeBook(Base):
         csv_reader = csv.DictReader(file_pointer, dialect='excel')
 
         response = self._spreadsheet2gradebook_multi(
-            csv_reader, email_field, non_assignment_fields, approve_grades
+            csv_reader,
+            email_field,
+            non_assignment_fields,
+            approve_grades=approve_grades,
+            use_max_points_column=use_max_points_column,
+            max_points_column=max_points_column,
+            normalize_column=normalize_column
         )
         return response
 
@@ -1055,6 +1152,8 @@ class GradeBook(Base):
                 is ``False``.
 
         Returns:
+
+            An example return value is:
 
             .. code-block:: python
 
