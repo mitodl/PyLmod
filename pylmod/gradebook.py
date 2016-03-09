@@ -133,6 +133,8 @@ class GradeBook(Base):
 
         Returns:
 
+            An example return value is:
+
             .. code-block:: python
 
                 {
@@ -1084,9 +1086,9 @@ class GradeBook(Base):
             email_field (str): student's email
             approve_grades (bool): Should grades be auto approved?
             use_max_points_column (bool):
-                If true, read the max points and normalize values from the CSV
-                and use the max points value in place of the default if
-                normalized is False.
+                If ``True``, read the max points and normalize values
+                from the CSV and use the max points value in place of
+                the default if normalized is ``False``.
             max_points_column (str): The name of the max_pts column. All
                 rows contain the same number, the max points for
                 the assignment.
@@ -1150,6 +1152,8 @@ class GradeBook(Base):
                 is ``False``.
 
         Returns:
+
+            An example return value is:
 
             .. code-block:: python
 
