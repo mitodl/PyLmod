@@ -932,6 +932,7 @@ class GradeBook(Base):
                     'Error in spreadsheet2gradebook: cannot find '
                     'student id for email="%s"\n', email
                 )
+                continue
             for field in row.keys():
                 if field in non_assignment_fields:
                     continue
