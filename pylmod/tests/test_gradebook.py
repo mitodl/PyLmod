@@ -445,7 +445,7 @@ class TestGradebook(BaseTest):
 
         last_request = httpretty.last_request()
         self.assertEqual(
-            last_request.body,
+            str(last_request.body, encoding='utf-8'),
             json.dumps({
                 'name': 'Test Assign',
                 'shortName': 'test-assign',
@@ -499,7 +499,7 @@ class TestGradebook(BaseTest):
         self.assertEqual(response_data, response)
         last_request = httpretty.last_request()
         self.assertEqual(
-            last_request.body,
+            str(last_request.body, encoding='utf-8'),
             json.dumps(grade)
         )
 
@@ -517,7 +517,7 @@ class TestGradebook(BaseTest):
         self.assertEqual(response_data, response)
         last_request = httpretty.last_request()
         self.assertEqual(
-            last_request.body,
+            str(last_request.body, encoding='utf-8'),
             json.dumps(grades)
         )
 
@@ -985,10 +985,9 @@ class TestGradebook(BaseTest):
         del kwargs[key]
         with self.assertRaises(ValueError) as ex:
             gradebook._spreadsheet2gradebook_multi(**kwargs)
-
-        assert ex.exception[0] == (
-            '{} must be set if use_max_points_column is set'.format(key)
-        )
+            assert str(ex) == (
+                '{} must be set if use_max_points_column is set'.format(key)
+            )
 
     @mock.patch.object(
         GradeBook,

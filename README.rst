@@ -65,6 +65,10 @@ grades. PyLmod was created to support MIT's
 use of OpenedX for residential courses, but the library is open source
 to enable easier access for Python application developers at MIT.
 
+Development
+===========
+See the `Development Notes <https://github.com/mitodl/PyLmod/Development.rst>`_
+
 Licensing
 =========
 PyLmod is licensed under the BSD license, version January 9, 2008.  See

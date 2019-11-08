@@ -180,7 +180,7 @@ class TestMembership(BaseTest):
             test_membership.get_course_id(self.CUUID)
         mock_log.exception.assert_called_with(
             "KeyError in get_course_id - "
-            "got {u'response': {u'docs': {u'enabled': True}}}"
+            "got {'response': {'docs': {'enabled': True}}}"
         )
 
         # Produce TypeError and assert exception raised
@@ -188,7 +188,7 @@ class TestMembership(BaseTest):
         with self.assertRaises(PyLmodUnexpectedData):
             test_membership.get_course_id(self.CUUID)
         mock_log.exception.assert_called_with(
-            "TypeError in get_course_id - got [u'arnold']"
+            "TypeError in get_course_id - got ['arnold']"
         )
 
         # Remove data and assert exception raised
@@ -252,7 +252,7 @@ class TestMembership(BaseTest):
             test_membership.get_group_id(self.CUUID)
         mock_log.exception.assert_called_with(
             "Error in get_group response data - "
-            "got {u'response': {u'docs': []}}"
+            "got {'response': {'docs': []}}"
         )
 
         # KeyError
@@ -262,7 +262,7 @@ class TestMembership(BaseTest):
             test_membership.get_group_id(self.CUUID)
         mock_log.exception.assert_called_with(
             "Error in get_group response data - "
-            "got {u'response': {u'foo': []}}"
+            "got {'response': {'foo': []}}"
         )
 
     @httpretty.activate
@@ -280,7 +280,7 @@ class TestMembership(BaseTest):
             )
         mock_log.exception.assert_called_with(
             "KeyError in membership data - "
-            "got {u'response': {u'foo': []}}"
+            "got {'response': {'foo': []}}"
         )
 
     @httpretty.activate

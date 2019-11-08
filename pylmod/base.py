@@ -72,7 +72,7 @@ class Base(object):
         Args:
             data (str): data to convert to json
         """
-        if type(data) not in [str, unicode]:
+        if type(data) != str:
             data = json.dumps(data)
         return data
 
@@ -107,7 +107,7 @@ class Base(object):
         """
         try:
             response = func(url, timeout=self.TIMEOUT, **kwargs)
-        except requests.RequestException, err:
+        except requests.RequestException as err:
             log.exception(
                 "[PyLmod] Error - connection error in "
                 "rest_action, err=%s", err
@@ -115,7 +115,7 @@ class Base(object):
             raise err
         try:
             return response.json()
-        except ValueError, err:
+        except ValueError as err:
             log.exception('Unable to decode %s', response.content)
             raise err
 
