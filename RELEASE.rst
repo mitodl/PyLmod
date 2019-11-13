@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+Release 1.0.1
+-------------
+- Bump version because of metadata mistake in 1.0.0
+
 Release 1.0.0
 -------------
 - Upgrade to Python 3.7
