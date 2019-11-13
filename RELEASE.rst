@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+Release 1.0.0
+-------------
+- Upgrade to Python 3.7
+- Add Virtualenv dir to .gitignore
+
 Release 0.2.0
 -------------
 
