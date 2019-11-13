@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+Release 1.0.2
+-------------
+- Fix development status classifier
+
 Release 1.0.1
 -------------
 - Bump version because of metadata mistake in 1.0.0

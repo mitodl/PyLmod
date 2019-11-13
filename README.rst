@@ -18,7 +18,7 @@ PyLmod
     :target: http://pylmod.rtfd.org/en/release
 
 :PyLmod: Python implementation of MIT Learning Modules API
-:Version: 1.0.1
+:Version: 1.0.2
 :Author: MIT Office of Digital Learning
 :Homepage: http://engineering.odl.mit.edu
 :License: BSD

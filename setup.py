@@ -50,7 +50,7 @@ README = open('README.rst').read()
 
 setup(
     name='pylmod',
-    version='1.0.1',
+    version='1.0.2',
     license='BSD',
     author='MIT ODL Engineering',
     author_email='odl-engineering@mit.edu',
@@ -80,7 +80,7 @@ setup(
         ]
     },
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Intended Audience :: Education',
         'Programming Language :: Python',
