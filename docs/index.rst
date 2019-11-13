@@ -12,6 +12,7 @@ Table of Contents
    :maxdepth: 3
 
    api
+   development
 
 Indices and Search
 ==================

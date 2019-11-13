@@ -57,7 +57,6 @@ class TestBase(BaseTest):
             json.dumps(data)
         )
         self.assertEqual('a', Base._data_to_json('a'))
-        self.assertEqual('a', Base._data_to_json(unicode('a')))
 
     def test_url_format(self):
         """Verify url format does the right thing"""
@@ -101,7 +100,7 @@ class TestBase(BaseTest):
         self._register_uri(timeout=True)
         test_base = Base(self.CERT, self.URLBASE)
         rest_function = test_base._session.get
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
             requests.ConnectionError,
             'Max retries exceeded with url'
         ):

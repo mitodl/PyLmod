@@ -180,24 +180,24 @@ class Membership(Base):
 
                 [
                     {
-                        u'displayName': u'Huey Duck',
-                        u'role': u'TA',
-                        u'sortableDisplayName': u'Duck, Huey'
+                        'displayName': 'Huey Duck',
+                        'role': 'TA',
+                        'sortableDisplayName': 'Duck, Huey'
                     },
                     {
-                        u'displayName': u'Louie Duck',
-                        u'role': u'CourseAdmin',
-                        u'sortableDisplayName': u'Duck, Louie'
+                        'displayName': 'Louie Duck',
+                        'role': 'CourseAdmin',
+                        'sortableDisplayName': 'Duck, Louie'
                     },
                     {
-                        u'displayName': u'Benjamin Franklin',
-                        u'role': u'CourseAdmin',
-                        u'sortableDisplayName': u'Franklin, Benjamin'
+                        'displayName': 'Benjamin Franklin',
+                        'role': 'CourseAdmin',
+                        'sortableDisplayName': 'Franklin, Benjamin'
                     },
                     {
-                        u'displayName': u'George Washington',
-                        u'role': u'Instructor',
-                        u'sortableDisplayName': u'Washington, George'
+                        'displayName': 'George Washington',
+                        'role': 'Instructor',
+                        'sortableDisplayName': 'Washington, George'
                     },
                 ]
     """

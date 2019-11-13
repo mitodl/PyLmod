@@ -37,7 +37,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PyLmod'
-copyright = u'2015, MIT Office of Digital Learning'
+copyright = u'2019, MIT Office of Digital Learning'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -121,7 +121,7 @@ texinfo_documents = [
 epub_title = u'PyLmod'
 epub_author = u'MIT Office of Digital Learning'
 epub_publisher = u'MIT Office of Digital Learning'
-epub_copyright = u'2015, MIT Office of Digital Learning'
+epub_copyright = u'2019, MIT Office of Digital Learning'
 
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']

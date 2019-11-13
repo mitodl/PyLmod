@@ -58,15 +58,33 @@ setup(
     description="PyLmod is a Python Implementation of MIT Learning Modules",
     long_description=README,
     packages=find_packages(),
-    install_requires=["requests>=2.5.1", ],
+    install_requires=[
+        'requests~=2.0'
+    ],
+    extras_require={
+        'dev': [
+            'pytest~=5.0',
+            'pytest-cov~=2.0',
+            'pytest-flakes~=4.0',
+            'pytest-pep8~=1.0',
+            'pytest-cache~=1.0',
+            'httpretty~=0.9.0',
+            'semantic_version~=2.0',
+            'mock~=3.0',
+            'ddt~=1.0'
+        ],
+        'doc': [
+            'sphinx~=2.0',
+            'sphinx_bootstrap_theme==0.7.0',
+            'sphinxcontrib-napoleon==0.7'
+        ]
+    },
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'Intended Audience :: Education',
         'Programming Language :: Python',
     ],
-    test_suite="pylmod.tests",
-    tests_require=tests_require,
     cmdclass={"test": PyTest},
     include_package_data=True,
     zip_safe=True,

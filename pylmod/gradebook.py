@@ -39,9 +39,9 @@ class GradeBook(Base):
     .. code-block:: python
 
         {
-            u'status':1,
-            u'message':u'',
-            u'data':{...}
+            'status': 1,
+            'message': '',
+            'data': {...}
         }
 
     API reference at
@@ -138,39 +138,39 @@ class GradeBook(Base):
             .. code-block:: python
 
                 {
-                    u'data':
+                    'data':
                     {
-                        u'accessLevel': u'class',
-                        u'archived': False,
-                        u'calc_on_approved_only': False,
-                        u'configured': None,
-                        u'courseName': u'',
-                        u'courseNumber': u'mitxdemosite',
-                        u'deriveOverallGrades': False,
-                        u'gradebookEwsEnabled': False,
-                        u'gradebookId': 1293808,
-                        u'gradebookName': u'Gradebook for mitxdemosite',
-                        u'gradebookReadOnly': False,
-                        u'gradebookVisibleToAdvisors': False,
-                        u'graders_change_approved': False,
-                        u'hideExcuseButtonInUI': False,
-                        u'homeworkBetaEnabled': False,
-                        u'membershipQualifier': u'/project/mitxdemosite',
-                        u'membershipSource': u'stellar',
-                        u'student_sees_actual_grades': True,
-                        u'student_sees_category_info': True,
-                        u'student_sees_comments': True,
-                        u'student_sees_cumulative_score': True,
-                        u'student_sees_histograms': True,
-                        u'student_sees_submissions': False,
-                        u'ta_approves': False,
-                        u'ta_change_approved': False,
-                        u'ta_configures': False,
-                        u'ta_edits': False,
-                        u'use_grade_weighting': False,
-                        u'usingAttendance': False,
-                        u'versionCompatible': 4,
-                        u'versionCompatibleString': u'General Availability'
+                        'accessLevel': 'class',
+                        'archived': False,
+                        'calc_on_approved_only': False,
+                        'configured': None,
+                        'courseName': '',
+                        'courseNumber': 'mitxdemosite',
+                        'deriveOverallGrades': False,
+                        'gradebookEwsEnabled': False,
+                        'gradebookId': 1293808,
+                        'gradebookName': 'Gradebook for mitxdemosite',
+                        'gradebookReadOnly': False,
+                        'gradebookVisibleToAdvisors': False,
+                        'graders_change_approved': False,
+                        'hideExcuseButtonInUI': False,
+                        'homeworkBetaEnabled': False,
+                        'membershipQualifier': '/project/mitxdemosite',
+                        'membershipSource': 'stellar',
+                        'student_sees_actual_grades': True,
+                        'student_sees_category_info': True,
+                        'student_sees_comments': True,
+                        'student_sees_cumulative_score': True,
+                        'student_sees_histograms': True,
+                        'student_sees_submissions': False,
+                        'ta_approves': False,
+                        'ta_change_approved': False,
+                        'ta_configures': False,
+                        'ta_edits': False,
+                        'use_grade_weighting': False,
+                        'usingAttendance': False,
+                        'versionCompatible': 4,
+                        'versionCompatibleString': 'General Availability'
                     },
                 }
 
@@ -221,40 +221,40 @@ class GradeBook(Base):
 
                 [
                     {
-                        u'assignmentId': 2431240,
-                        u'categoryId': 1293820,
-                        u'description': u'',
-                        u'dueDate': 1372392000000,
-                        u'dueDateString': u'06-28-2013',
-                        u'gradebookId': 1293808,
-                        u'graderVisible': True,
-                        u'gradingSchemeId': 2431243,
-                        u'gradingSchemeType': u'NUMERIC',
-                        u'isComposite': False,
-                        u'isHomework': False,
-                        u'maxPointsTotal': 10.0,
-                        u'name': u'Homework 1',
-                        u'shortName': u'HW1',
-                        u'userDeleted': False,
-                        u'weight': 1.0
+                        'assignmentId': 2431240,
+                        'categoryId': 1293820,
+                        'description': '',
+                        'dueDate': 1372392000000,
+                        'dueDateString': '06-28-2013',
+                        'gradebookId': 1293808,
+                        'graderVisible': True,
+                        'gradingSchemeId': 2431243,
+                        'gradingSchemeType': 'NUMERIC',
+                        'isComposite': False,
+                        'isHomework': False,
+                        'maxPointsTotal': 10.0,
+                        'name': 'Homework 1',
+                        'shortName': 'HW1',
+                        'userDeleted': False,
+                        'weight': 1.0
                     },
                     {
-                        u'assignmentId': 16708850,
-                        u'categoryId': 1293820,
-                        u'description': u'',
-                        u'dueDate': 1383541200000,
-                        u'dueDateString': u'11-04-2013',
-                        u'gradebookId': 1293808,
-                        u'graderVisible': False,
-                        u'gradingSchemeId': 16708851,
-                        u'gradingSchemeType': u'NUMERIC',
-                        u'isComposite': False,
-                        u'isHomework': False,
-                        u'maxPointsTotal': 100.0,
-                        u'name': u'midterm1',
-                        u'shortName': u'mid1',
-                        u'userDeleted': False,
-                        u'weight': 1.0
+                        'assignmentId': 16708850,
+                        'categoryId': 1293820,
+                        'description': '',
+                        'dueDate': 1383541200000,
+                        'dueDateString': '11-04-2013',
+                        'gradebookId': 1293808,
+                        'graderVisible': False,
+                        'gradingSchemeId': 16708851,
+                        'gradingSchemeType': 'NUMERIC',
+                        'isComposite': False,
+                        'isHomework': False,
+                        'maxPointsTotal': 100.0,
+                        'name': 'midterm1',
+                        'shortName': 'mid1',
+                        'userDeleted': False,
+                        'weight': 1.0
                     },
                 ]
 
@@ -305,22 +305,22 @@ class GradeBook(Base):
                 (
                     16708850,
                     {
-                        u'assignmentId': 16708850,
-                        u'categoryId': 1293820,
-                        u'description': u'',
-                        u'dueDate': 1383541200000,
-                        u'dueDateString': u'11-04-2013',
-                        u'gradebookId': 1293808,
-                        u'graderVisible': False,
-                        u'gradingSchemeId': 16708851,
-                        u'gradingSchemeType': u'NUMERIC',
-                        u'isComposite': False,
-                        u'isHomework': False,
-                        u'maxPointsTotal': 100.0,
-                        u'name': u'midterm1',
-                        u'shortName': u'mid1',
-                        u'userDeleted': False,
-                        u'weight': 1.0
+                        'assignmentId': 16708850,
+                        'categoryId': 1293820,
+                        'description': '',
+                        'dueDate': 1383541200000,
+                        'dueDateString': '11-04-2013',
+                        'gradebookId': 1293808,
+                        'graderVisible': False,
+                        'gradingSchemeId': 16708851,
+                        'gradingSchemeType': 'NUMERIC',
+                        'isComposite': False,
+                        'isHomework': False,
+                        'maxPointsTotal': 100.0,
+                        'name': 'midterm1',
+                        'shortName': 'mid1',
+                        'userDeleted': False,
+                        'weight': 1.0
                     }
                 )
 
@@ -366,9 +366,9 @@ class GradeBook(Base):
                 .. code-block:: python
 
                     {
-                        u'graderVisible': True,
-                        u'totalAverage': None
-                        u'categoryId': 1007964,
+                        'graderVisible': True,
+                        'totalAverage': None
+                        'categoryId': 1007964,
                     }
 
         Raises:
@@ -382,29 +382,29 @@ class GradeBook(Base):
             .. code-block:: python
 
                 {
-                    u'data':
+                    'data':
                     {
-                        u'assignmentId': 18490492,
-                        u'categoryId': 1293820,
-                        u'description': u'',
-                        u'dueDate': 1312171200000,
-                        u'dueDateString': u'08-01-2011',
-                        u'gradebookId': 1293808,
-                        u'graderVisible': False,
-                        u'gradingSchemeId': 18490493,
-                        u'gradingSchemeType': u'NUMERIC',
-                        u'isComposite': False,
-                        u'isHomework': False,
-                        u'maxPointsTotal': 100.0,
-                        u'name': u'new NUMERIC SIMPLE ASSIGNMENT',
-                        u'numStudentGradesToBeApproved': 0,
-                        u'numStudentsToBeGraded': 614,
-                        u'shortName': u'SAnew',
-                        u'userDeleted': False,
-                        u'weight': 1.0
+                        'assignmentId': 18490492,
+                        'categoryId': 1293820,
+                        'description': '',
+                        'dueDate': 1312171200000,
+                        'dueDateString': '08-01-2011',
+                        'gradebookId': 1293808,
+                        'graderVisible': False,
+                        'gradingSchemeId': 18490493,
+                        'gradingSchemeType': 'NUMERIC',
+                        'isComposite': False,
+                        'isHomework': False,
+                        'maxPointsTotal': 100.0,
+                        'name': 'new NUMERIC SIMPLE ASSIGNMENT',
+                        'numStudentGradesToBeApproved': 0,
+                        'numStudentsToBeGraded': 614,
+                        'shortName': 'SAnew',
+                        'userDeleted': False,
+                        'weight': 1.0
                     },
-                    u'message': u'assignment is created successfully',
-                    u'status': 1
+                    'message': 'assignment is created successfully',
+                    'status': 1
                 }
 
         """
@@ -442,8 +442,8 @@ class GradeBook(Base):
             .. code-block:: python
 
                 {
-                    u'message': u'assignment is deleted successfully',
-                    u'status': 1
+                    'message': 'assignment is deleted successfully',
+                    'status': 1
                 }
 
         """
@@ -481,13 +481,13 @@ class GradeBook(Base):
                 .. code-block:: python
 
                     {
-                        u'letterGradeValue':None,
-                        u'booleanGradeValue':None,
-                        u'specialGradeValue':None,
-                        u'mode':2,
-                        u'isGradeApproved':False,
-                        u'comment':None,
-                        u'returnAffectedValues': True,
+                        'letterGradeValue':None,
+                        'booleanGradeValue':None,
+                        'specialGradeValue':None,
+                        'mode':2,
+                        'isGradeApproved':False,
+                        'comment':None,
+                        'returnAffectedValues': True,
                     }
 
         Raises:
@@ -500,8 +500,8 @@ class GradeBook(Base):
             .. code-block:: python
 
                 {
-                    u'message': u'grade saved successfully',
-                    u'status': 1
+                    'message': 'grade saved successfully',
+                    'status': 1
                 }
 
         """
@@ -551,40 +551,40 @@ class GradeBook(Base):
 
             [
                 {
-                    u'comment': None,
-                    u'booleanGradeValue': None,
-                    u'studentId': 1135,
-                    u'assignmentId': 4522,
-                    u'specialGradeValue': None,
-                    u'returnAffectedValues': True,
-                    u'letterGradeValue': None,
-                    u'mode': 2,
-                    u'numericGradeValue': 50,
-                    u'isGradeApproved': False
+                    'comment': None,
+                    'booleanGradeValue': None,
+                    'studentId': 1135,
+                    'assignmentId': 4522,
+                    'specialGradeValue': None,
+                    'returnAffectedValues': True,
+                    'letterGradeValue': None,
+                    'mode': 2,
+                    'numericGradeValue': 50,
+                    'isGradeApproved': False
                 },
                 {
-                    u'comment': None,
-                    u'booleanGradeValue': None,
-                    u'studentId': 1135,
-                    u'assignmentId': 4522,
-                    u'specialGradeValue': u'x',
-                    u'returnAffectedValues': True,
-                    u'letterGradeValue': None,
-                    u'mode': 2,
-                    u'numericGradeValue': None,
-                    u'isGradeApproved': False
+                    'comment': None,
+                    'booleanGradeValue': None,
+                    'studentId': 1135,
+                    'assignmentId': 4522,
+                    'specialGradeValue': 'x',
+                    'returnAffectedValues': True,
+                    'letterGradeValue': None,
+                    'mode': 2,
+                    'numericGradeValue': None,
+                    'isGradeApproved': False
                 },
                 {
-                    u'comment': None,
-                    u'booleanGradeValue': None,
-                    u'studentId': 1135,
-                    u'assignmentId': None,
-                    u'specialGradeValue': None,
-                    u'returnAffectedValues': True,
-                    u'letterGradeValue': u'A',
-                    u'mode': 1,
-                    u'numericGradeValue': None,
-                    u'isGradeApproved': False
+                    'comment': None,
+                    'booleanGradeValue': None,
+                    'studentId': 1135,
+                    'assignmentId': None,
+                    'specialGradeValue': None,
+                    'returnAffectedValues': True,
+                    'letterGradeValue': 'A',
+                    'mode': 1,
+                    'numericGradeValue': None,
+                    'isGradeApproved': False
                 }
             ]
 
@@ -635,32 +635,32 @@ class GradeBook(Base):
             .. code-block:: python
 
                 {
-                    u'recitation':
+                    'recitation':
                     [
                         {
-                            u'editable': False,
-                            u'groupId': 1293925,
-                            u'groupingScheme': u'Recitation',
-                            u'members': None,
-                            u'name': u'Unassigned',
-                            u'shortName': u'DefaultGroupNoCollisionPlease1234',
-                            u'staffs': None
+                            'editable': False,
+                            'groupId': 1293925,
+                            'groupingScheme': 'Recitation',
+                            'members': None,
+                            'name': 'Unassigned',
+                            'shortName': 'DefaultGroupNoCollisionPlease1234',
+                            'staffs': None
                         },
                         {
-                            u'editable': True,
-                            u'groupId': 1327565,
-                            u'groupingScheme': u'Recitation',
-                            u'members': None,
-                            u'name': u'r01',
-                            u'shortName': u'r01',
-                            u'staffs': None},
-                            {u'editable': True,
-                            u'groupId': 1327555,
-                            u'groupingScheme': u'Recitation',
-                            u'members': None,
-                            u'name': u'r02',
-                            u'shortName': u'r02',
-                            u'staffs': None
+                            'editable': True,
+                            'groupId': 1327565,
+                            'groupingScheme': 'Recitation',
+                            'members': None,
+                            'name': 'r01',
+                            'shortName': 'r01',
+                            'staffs': None},
+                            {'editable': True,
+                            'groupId': 1327555,
+                            'groupingScheme': 'Recitation',
+                            'members': None,
+                            'name': 'r02',
+                            'shortName': 'r02',
+                            'staffs': None
                         }
                     ]
                 }
@@ -703,13 +703,13 @@ class GradeBook(Base):
                 (
                     1327565,
                     {
-                        u'editable': True,
-                        u'groupId': 1327565,
-                        u'groupingScheme': u'Recitation',
-                        u'members': None,
-                        u'name': u'r01',
-                        u'shortName': u'r01',
-                        u'staffs': None
+                        'editable': True,
+                        'groupId': 1327565,
+                        'groupingScheme': 'Recitation',
+                        'members': None,
+                        'name': 'r01',
+                        'shortName': 'r01',
+                        'staffs': None
                     }
                 )
 
@@ -759,21 +759,21 @@ class GradeBook(Base):
         .. code-block:: python
 
             [{
-                u'accountEmail': u'stellar.test2@gmail.com',
-                u'displayName': u'Molly Parker',
-                u'photoUrl': None,
-                u'middleName': None,
-                u'section': u'Unassigned',
-                u'sectionId': 1293925,
-                u'editable': False,
-                u'overallGradeInformation': None,
-                u'studentId': 1145,
-                u'studentAssignmentInfo': None,
-                u'sortableName': u'Parker, Molly',
-                u'surname': u'Parker',
-                u'givenName': u'Molly',
-                u'nickName': u'Molly',
-                u'email': u'stellar.test2@gmail.com'
+                'accountEmail': 'stellar.test2@gmail.com',
+                'displayName': 'Molly Parker',
+                'photoUrl': None,
+                'middleName': None,
+                'section': 'Unassigned',
+                'sectionId': 1293925,
+                'editable': False,
+                'overallGradeInformation': None,
+                'studentId': 1145,
+                'studentAssignmentInfo': None,
+                'sortableName': 'Parker, Molly',
+                'surname': 'Parker',
+                'givenName': 'Molly',
+                'nickName': 'Molly',
+                'email': 'stellar.test2@gmail.com'
             },]
 
         """
@@ -1159,53 +1159,53 @@ class GradeBook(Base):
             .. code-block:: python
 
                 {
-                    u'data': {
-                        u'COURSE_ADMIN': [
+                    'data': {
+                        'COURSE_ADMIN': [
                             {
-                                u'accountEmail': u'benfranklin@mit.edu',
-                                u'displayName': u'Benjamin Franklin',
-                                u'editable': False,
-                                u'email': u'benfranklin@mit.edu',
-                                u'givenName': u'Benjamin',
-                                u'middleName': None,
-                                u'mitId': u'921344431',
-                                u'nickName': u'Benjamin',
-                                u'personId': 10710616,
-                                u'sortableName': u'Franklin, Benjamin',
-                                u'surname': u'Franklin',
-                                u'year': None
+                                'accountEmail': 'benfranklin@mit.ed',
+                                'displayName': 'Benjamin Franklin',
+                                'editable': False,
+                                'email': 'benfranklin@mit.ed',
+                                'givenName': 'Benjamin',
+                                'middleName': None,
+                                'mitId': '921344431',
+                                'nickName': 'Benjamin',
+                                'personId': 10710616,
+                                'sortableName': 'Franklin, Benjamin',
+                                'surname': 'Franklin',
+                                'year': None
                             },
                         ],
-                        u'COURSE_PROF': [
+                        'COURSE_PROF': [
                             {
-                                u'accountEmail': u'dduck@mit.edu',
-                                u'displayName': u'Donald Duck',
-                                u'editable': False,
-                                u'email': u'dduck@mit.edu',
-                                u'givenName': u'Donald',
-                                u'middleName': None,
-                                u'mitId': u'916144889',
-                                u'nickName': u'Donald',
-                                u'personId': 8117160,
-                                u'sortableName': u'Duck, Donald',
-                                u'surname': u'Duck',
-                                u'year': None
+                                'accountEmail': 'dduck@mit.ed',
+                                'displayName': 'Donald Duck',
+                                'editable': False,
+                                'email': 'dduck@mit.ed',
+                                'givenName': 'Donald',
+                                'middleName': None,
+                                'mitId': '916144889',
+                                'nickName': 'Donald',
+                                'personId': 8117160,
+                                'sortableName': 'Duck, Donald',
+                                'surname': 'Duck',
+                                'year': None
                             },
                         ],
-                        u'COURSE_TA': [
+                        'COURSE_TA': [
                             {
-                                u'accountEmail': u'hduck@mit.edu',
-                                u'displayName': u'Huey Duck',
-                                u'editable': False,
-                                u'email': u'hduck@mit.edu',
-                                u'givenName': u'Huey',
-                                u'middleName': None,
-                                u'mitId': u'920445024',
-                                u'nickName': u'Huey',
-                                u'personId': 1299059,
-                                u'sortableName': u'Duck, Huey',
-                                u'surname': u'Duck',
-                                u'year': None
+                                'accountEmail': 'hduck@mit.ed',
+                                'displayName': 'Huey Duck',
+                                'editable': False,
+                                'email': 'hduck@mit.ed',
+                                'givenName': 'Huey',
+                                'middleName': None,
+                                'mitId': '920445024',
+                                'nickName': 'Huey',
+                                'personId': 1299059,
+                                'sortableName': 'Duck, Huey',
+                                'surname': 'Duck',
+                                'year': None
                             },
                         ]
                     },
