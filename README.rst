@@ -1,3 +1,5 @@
+Since the MIT Learning Modules web service is being phased out, this client library is archived. 
+
 PyLmod
 ======
 .. image:: https://img.shields.io/travis/mitodl/PyLmod.svg
